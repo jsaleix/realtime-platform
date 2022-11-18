@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo-data:/data/db
+    working_dir: /usr/local/
+
+  server:
+    image: node:alpine
+    volumes:
+      - ./server:/usr/local/server
+    working_dir: /usr/local/server
+    environment:
+      - PORT=3000
+      - MONGO_URL=mongodb://root:password@mongo:27017/app?authSource=admin
+      - JWT_SECRET=secret
+    ports:
+      - 3000:3000
+    command: npm run dev
+    depends_on:
+      - mongo
+
+  app:
+    image: node:17.0.0-alpine
+    user: node
+    working_dir: /home/node
+    entrypoint: node
+    tty: true
+    ports:
+      - 8000:8000
+    stdin_open: true
+    volumes:
+      - ./app:/home/node
+      
+volumes:
+  mongo-data: {}
