@@ -6,7 +6,12 @@ class Room extends Model{};
 
 Room.init(
     {
-        name: {
+        displayName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+        },
+        socketId: {
             type: DataTypes.STRING,
             allowNull: false,
             unique: true,

@@ -1,0 +1,79 @@
+[
+    {
+        "model": "user",
+        "data": {
+            "id": 1,
+            "email": "admin@admin.com",
+            "password": "admin",
+            "firstName": "Admin",
+            "lastName": "Admin",
+            "isAdmin": true
+        }
+    },
+    {
+        "model": "user",
+        "data": {
+            "id": 2,
+            "email": "user@user.com",
+            "password": "user",
+            "firstName": "user",
+            "lastName": "user",
+            "isAdmin": false
+        }
+    },
+    {
+        "model": "user",
+        "data": {
+            "id": 3,
+            "email": "user1@user1.com",
+            "password": "user",
+            "firstName": "user1",
+            "lastName": "user1",
+            "isAdmin": false
+        }
+    },
+    {
+        "model": "room",
+        "data": {
+            "id": 1,
+            "displayName": "Les chassis en or massif",
+            "socketId": "chassis",
+            "maxParticipants": 20,
+            "isClosed": false 
+        }
+    },
+    {
+        "model": "room",
+        "data": {
+            "id": 2,
+            "displayName": "Le SSE, pourquoi ?",
+            "socketId": "sse",
+            "maxParticipants": 3,
+            "isClosed": false 
+        }
+    },
+    {
+        "model": "message",
+        "data": {
+            "content": "Bonjour, je suis un message",
+            "roomId": 1,
+            "sender": 1
+        }
+    },
+    {
+        "model": "message",
+        "data": {
+            "content": "Bonjour, je suis 2eme un message",
+            "roomId": 1,
+            "sender": 1
+        }
+    },
+    {
+        "model": "message",
+        "data": {
+            "content": "Bonjour, je suis 3eme un message",
+            "roomId": 1,
+            "sender": 2
+        }
+    }
+]

@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { connection } = require("./models");
+const sequelize_fixtures = require('sequelize-fixtures');
 
 connection
   .sync({
@@ -7,5 +8,9 @@ connection
   })
   .then(() => {
     console.log("Database synced");
-    connection.close();
+    sequelize_fixtures.loadFile('./fixtures/*.json', connection.models).then(() => {
+      console.log("Fixtures loaded")
+      connection.close();
+    });
   });
+

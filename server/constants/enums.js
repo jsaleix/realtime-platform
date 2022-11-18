@@ -2,3 +2,9 @@ exports.NOTIFICATION_TYPES = {
     "COMMERCE": "COMMERCE",
     "ASK": "ASK",
 }
+
+exports.CONVERSATION_STATUS = {
+    "PENDING": "PENDING",
+    "ACCEPTED": "ACCEPTED",
+    "CLOSED": "CLOSED"
+}
