@@ -1,1 +1,1 @@
-export const ACCOUNT_STORAGE_KEY = 'account';
+export const TOKEN_STORAGE_KEY = 'token';

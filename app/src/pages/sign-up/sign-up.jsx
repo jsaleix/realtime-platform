@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import style from "./sign-up.module.scss";
 import { toast } from "react-toastify";
 import AuthService from "../../services/auth.service";
+import { dispatch } from "../../contexts/app-context";
 
 export default function SignUp() {
+  const  { appState } = useAppContext();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
