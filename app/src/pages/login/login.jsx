@@ -3,10 +3,13 @@ import style from "./login.module.scss";
 import AuthService from "../../services/auth.service";
 import { toast } from "react-toastify";
 import { useAppContext } from "../../contexts/app-context";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const  { dispatch } = useAppContext();
+  const { appState, dispatch } = useAppContext();
+  const [disableBtn, setDisableBtn] = useState(false);
+  const navigate = useNavigate();
 
   const updateField = useCallback(
     (e) => {
@@ -22,6 +25,7 @@ export default function Login() {
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
+      setDisableBtn(true);
       if (formData.email === "" || formData.password === "") {
         toast.error("Empty field(s)", {
           position: "top-right",
@@ -36,10 +40,11 @@ export default function Login() {
       }
 
       try {
-        const response = await AuthService.login(formData);
-        dispatch({ action: "SET_TOKEN", payload: { token: response.token } });
-
+        const token = await AuthService.login(formData);
+        dispatch({ action: "SET_TOKEN", payload: { token } });
+        navigate("/");
       } catch (e) {
+        setDisableBtn(false);
         toast.error(e.message, {
           position: "top-right",
           autoClose: 5000,
@@ -57,6 +62,13 @@ export default function Login() {
   useEffect(() => {
     document.title = "RealTime app | Login";
   }, []);
+
+  useEffect(() => {
+    console.log(appState)
+    if (appState.auth.token) {
+      navigate("/");
+    }
+  }, [appState.token]);
 
   return (
     <div className={`${style.main} container`}>
@@ -76,7 +88,12 @@ export default function Login() {
           value={formData.password}
           onChange={updateField}
         />
-        <input className="btn blue" type="submit" value="Login" />
+        <input
+          disabled={disableBtn}
+          className={`btn ${disableBtn ? "disabled" : "blue"}`}
+          type="submit"
+          value="Login"
+        />
       </form>
     </div>
   );

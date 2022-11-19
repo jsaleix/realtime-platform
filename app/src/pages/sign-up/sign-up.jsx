@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
   const { appState } = useAppContext();
-  const [ disableBtn, setDisableBtn ] = useState(false);
+  const [disableBtn, setDisableBtn] = useState(false);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -31,8 +31,8 @@ export default function SignUp() {
           throw new Error("Empty field(s)");
 
         const res = await AuthService.register(formData);
-        if(res === true){
-          toast.success('Registration successful', {
+        if (res === true) {
+          toast.success("Registration successful", {
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,
@@ -41,9 +41,9 @@ export default function SignUp() {
             draggable: true,
             progress: undefined,
           });
-          navigate('/login');
-        }else{
-          throw new Error('An error occured');
+          navigate("/login");
+        } else {
+          throw new Error("An error occured");
         }
       } catch (e) {
         toast.error(e.message, {
@@ -75,6 +75,13 @@ export default function SignUp() {
   useEffect(() => {
     document.title = "RealTime app | Sign Up";
   }, []);
+
+  useEffect(() => {
+    if (appState.auth.token) {
+      navigate("/");
+    }
+  }, [appState.token]);
+
 
   return (
     <div className={`${style.main} container`}>
@@ -108,7 +115,12 @@ export default function SignUp() {
           value={formData.password}
           onChange={updateField}
         />
-        <input disabled={disableBtn} className={`btn ${disableBtn ? 'disabled' : 'blue'}`} type="submit" value="Sign-up now" />
+        <input
+          disabled={disableBtn}
+          className={`btn ${disableBtn ? "disabled" : "blue"}`}
+          type="submit"
+          value="Sign-up now"
+        />
       </form>
     </div>
   );

@@ -1,18 +1,18 @@
 import { API_URL } from '../constants/urls.js';
 
 class AuthService{
-    async login(username, password){
-        let response = await fetch(`${API_URL}/login`, {
+    async login(user){
+        let response = await fetch(`${API_URL}/security/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'accept': 'application/json'
             },
-            body: JSON.stringify({username, password})
+            body: JSON.stringify({user})
         });
 
         if(response.status == 200){
-            return await response.json();
+            return response.json().then(res => res.token);
         }else{
             throw new Error('Invalid username or password');
         }
