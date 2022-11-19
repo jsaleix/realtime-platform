@@ -28,3 +28,7 @@ yarn-error.log*
 .DS_Store
 
 package-lock.json
+
+.ash_history
+.node_repl_history
+.npm
