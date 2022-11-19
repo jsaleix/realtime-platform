@@ -8,6 +8,7 @@ exports.createToken = (user) => {
 		firstName: user.firstName,
 		lastName: user.lastName,
 		isAdmin: user.isAdmin,
+		email: user.email,
 	};
 	return jwt.sign(payload, process.env.JWT_SECRET, {
 		expiresIn: "1y",

@@ -43,7 +43,9 @@ export const useAppContext = () => {
 export const appStateReducer = (previousState, { action, payload }) => {
     switch(action){            
         case "SET_TOKEN":
-            const { token, ...rest } = payload;
+            const { token } = payload;
+            const rest = getFromtoken(token);
+            console.log(rest);
             localStorage.setItem(TOKEN_STORAGE_KEY, token);
             return { ...previousState, auth: {...previousState.auth, token, ...rest } };
 
@@ -52,7 +54,7 @@ export const appStateReducer = (previousState, { action, payload }) => {
 
         case "LOGOUT":
             localStorage.removeItem(TOKEN_STORAGE_KEY);
-            return { emptyState };
+            return { ...previousState, auth: emptyState};
 
         case "SET_EVENT_SOURCE":
             return { ...previousState, eventSource: payload };

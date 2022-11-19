@@ -19,7 +19,7 @@ class AuthService{
     }
 
     async logout(token){
-        let response = await fetch(`${API_URL}/logout`, {
+        let response = await fetch(`${API_URL}/security/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
