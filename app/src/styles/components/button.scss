@@ -1,0 +1,55 @@
+.btn{
+    border-radius: 5px;
+    padding: 10px 10px;
+    width: fit-content;
+    font-weight: bolder;
+    transition: 0.5s;
+    outline: none;
+    border: 1px solid transparent;
+    //background-color: white;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+
+    &:focus{
+        outline: 0 !important;
+        box-shadow: none;
+    }
+
+    &.tall{
+        padding: 15px 10px;
+    }
+
+    &.blue{
+        background-color: $blue !important;
+        &:hover{
+            background-color: white !important;
+            color: $blue !important;
+            border: 1px solid $blue !important;
+        }
+    }
+
+    &.green{
+        background-color: $green !important;
+        &:hover{
+            background-color: white !important;
+            color: $green !important;
+            border: 1px solid $green !important;
+        }
+    }
+
+    &.red{
+        background-color: $red !important;
+        &:hover{
+            background-color: white !important;
+            color: $red !important;
+            border: 1px solid $red !important;
+        }
+    }
+
+    :disabled{
+        background-color: gray !important;
+        cursor: not-allowed !important;
+    }
+
+}

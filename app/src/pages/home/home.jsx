@@ -1,12 +1,15 @@
-import React from 'react';
+import { useEffect } from "react";
 
-export default function Home(){
-    return(
-        <div className="home">
-            <div className='container'>
+export default function Home() {
+  useEffect(() => {
+    document.title = "RealTime app";
+  }, []);
 
-                <p>TEST</p>
-            </div>
-        </div>
-    )
+  return (
+    <div className="home">
+      <div className="container">
+        <p>TEST</p>
+      </div>
+    </div>
+  );
 }
