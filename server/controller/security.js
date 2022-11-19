@@ -32,12 +32,9 @@ exports.register = async (req, res, next) => {
 		return res.status(201).json(user);
     } catch (error) {
       	if (error instanceof ValidationError) {
-			SpecificLogger(req, { 
-				message:`${req.method} on '${req.originalUrl}' - ${JSON.stringify(formatError(error.errors))}`,
-				level: log.levels.info
-			});
 			return res.status(422).json(formatError(error.errors));
       	} else {
+			console.error(error);
 			next();
       	}
     }

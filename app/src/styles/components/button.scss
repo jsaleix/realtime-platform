@@ -47,7 +47,8 @@
         }
     }
 
-    :disabled{
+    :disabled, .disabled{
+        color: 'black' !important;
         background-color: gray !important;
         cursor: not-allowed !important;
     }

@@ -3,28 +3,36 @@ import style from "./sign-up.module.scss";
 import { toast } from "react-toastify";
 import AuthService from "../../services/auth.service";
 import { useAppContext } from "../../contexts/app-context";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
-  const  { appState } = useAppContext();
+  const { appState } = useAppContext();
+  const [ disableBtn, setDisableBtn ] = useState(false);
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    confirmPassword: "",
+    firstName: "",
+    lastName: "",
   });
 
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
+      setDisableBtn(true);
+      try {
+        if (
+          formData.email === "" ||
+          formData.password === "" ||
+          formData.firstName === "" ||
+          formData.lastName === ""
+        )
+          throw new Error("Empty field(s)");
 
-      try{
-        if ( formData.email === "" || formData.password === "" || formData.confirmPassword === "" ) throw new Error("Empty field(s)");
-        if (formData.password !== formData.confirmPassword) throw new Error("Passwords do not match");
-        
         const res = await AuthService.register(formData);
-        console.log(res);
-
-        }catch(e){
-            toast.error(e.message, {
+        if(res === true){
+          toast.success('Registration successful', {
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,
@@ -32,9 +40,24 @@ export default function SignUp() {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            });
-            return;
+          });
+          navigate('/login');
+        }else{
+          throw new Error('An error occured');
         }
+      } catch (e) {
+        toast.error(e.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        setDisableBtn(false);
+        return;
+      }
     },
     [formData]
   );
@@ -60,25 +83,32 @@ export default function SignUp() {
         <input
           name="email"
           type="email"
-          placeholder="Email"
+          placeholder="Email*"
           value={formData.email}
+          onChange={updateField}
+        />
+        <input
+          name="firstName"
+          type="text"
+          placeholder="First Name*"
+          value={formData.firstName}
+          onChange={updateField}
+        />
+        <input
+          name="lastName"
+          type="text"
+          placeholder="Last Name*"
+          value={formData.lastName}
           onChange={updateField}
         />
         <input
           name="password"
           type="password"
-          placeholder="Password"
+          placeholder="Password*"
           value={formData.password}
           onChange={updateField}
         />
-        <input
-          name="confirmPassword"
-          type="password"
-          placeholder="Confirm Password"
-          value={formData.confirmPassword}
-          onChange={updateField}
-        />
-        <input className="btn blue" type="submit" value="Sign-up now" />
+        <input disabled={disableBtn} className={`btn ${disableBtn ? 'disabled' : 'blue'}`} type="submit" value="Sign-up now" />
       </form>
     </div>
   );
