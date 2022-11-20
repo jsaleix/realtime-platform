@@ -8,7 +8,7 @@ export default function Pannel(){
     return(
         <div className={styles.container}>
             <NotificationForm/>
-            <RoomForm className={styles.room}/>
+            <RoomForm/>
         </div>
     )
 }
