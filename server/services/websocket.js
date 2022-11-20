@@ -21,11 +21,13 @@ const rooms = [
 const DEFAULT_ROOM = "default";
 
 const EMITTED_EVENTS = {
-    USER_JOINED: "user_joined",
+    USER_JOINED: "user_joined_room",
+    CURRENT_USER_JOINED: "current_user_joined_room",
     USER_LEFT: "user_left",
     LEAVE_ROOM: "leave_room",
     NEW_MESSAGE: "new_message",
     LOAD_ROOMS: "load_rooms",
+    DISCONNECT: "disconnect",
 };
 
 const RECEIVED_EVENTS = {
@@ -47,14 +49,23 @@ const formatRooms = (rooms) => {
     });
 };
 
+const leaveRoom = (userId, socket) => {
+  const currentRoomId = rooms.findIndex((room) => room.users.includes(userId));
+  if(currentRoomId !== -1){
+      socket.leave(currentRoomId);
+      socket.to(currentRoomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
+      rooms[currentRoomId].users = rooms[currentRoomId].users.filter((id) => id !== userId);
+  }
+};
+
 exports.websocketManager = (io, socket) => {
   const token = socket.handshake.auth.token;
   if (!token) socket.disconnect();
 
   //Check if the user is authenticated, if not disconnect
-  let userId = verifyToken(token);
-  if (!userId) socket.disconnect();
-  userId = userId.id;
+  const user = verifyToken(token);
+  if (!user) socket.disconnect();
+  const userId = user.id;
 
   //Saving user's socket id
   clients[userId] = socket.id;
@@ -74,28 +85,22 @@ exports.websocketManager = (io, socket) => {
 
   socket.on(RECEIVED_EVENTS.JOIN_ROOM, ({roomId}) => {
     //Checking if the room exists
-    //...
     const roomIdx = rooms.findIndex((room) => room.id === roomId);
     if(roomIdx === -1) return;
 
     //Checking if the room is full
-    //...
     if(rooms[roomIdx].users.length === rooms[roomIdx].maxUsers) return;
 
-    //Checking if user is already in a room
-    //...
-    const currentRoomId = rooms.findIndex((room) => room.users.includes(userId));
-    if(currentRoomId !== -1){
-        socket.leave(currentRoomId);
-        socket.to(currentRoomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
-        rooms[currentRoomId].users = rooms[currentRoomId].users.filter((id) => id !== userId);
-    }
+    //Checking if user is already in a room, if so leave it
+    leaveRoom(userId, socket);
     
     socket.join(roomId);
     
     rooms[roomIdx].users.push(userId);
     socket.to(roomId).emit(EMITTED_EVENTS.USER_JOINED, roomId);
-    socket.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+    socket.broadcast.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+    io.to(socket.id).emit(EMITTED_EVENTS.CURRENT_USER_JOINED, roomId);
+    console.log(`User ${userId} joined room ${roomId}`);
   });
 
   socket.on("leave-room", () => {
@@ -105,10 +110,7 @@ exports.websocketManager = (io, socket) => {
     if(roomId === -1) return;
 
     //Removing user from room
-    //...
-    rooms = rooms.filter((room) => room.id !== roomId);
-    socket.to(roomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
-    socket.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+    leaveRoom(userId, socket);
 
     //Move user to default room
   });
@@ -116,21 +118,17 @@ exports.websocketManager = (io, socket) => {
   socket.on("disconnect", () => {
     if (clients[userId]) {
       delete clients[userId];
-      //Check if user is in a room
-      const roomId = rooms.findIndex((room) => room.users.includes(userId));
-        if(roomId !== -1){
-            socket.to(roomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
-            rooms[roomId].users = rooms[roomId].users.filter((id) => id !== userId);
-            socket.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
-        }
+      //Removing user from any potential room
+      leaveRoom(userId, socket);
     }
   });
 
-  socket.on("message", (data) => {
+  socket.on(RECEIVED_EVENTS.MESSAGE, ({message, roomId}) => {
+    if(!roomId ||!message || message === "" ) return;
     //Checking if user is in the room
     //If so, emit message
+    io.to(roomId).emit(EMITTED_EVENTS.NEW_MESSAGE, {message, userId, username: `${user.firstName} ${user.lastName}`});
     //Save message to database
-    //io.to(roomId).emit('message', data);
   });
 
   socket.on("create-room", (data) => {
