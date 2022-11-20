@@ -1,52 +1,65 @@
 import React, { useEffect, useState, useCallback } from "react";
-import {io} from 'socket.io-client';
 import { useAppContext } from "../../contexts/app-context";
+import { EMITTED_EVENTS, RECEIVED_EVENTS } from "../../constants/wss-events";
+import MessageItem from "../message-item/message-item";
+import style from "./channel.module.scss";
 
-export default function Channel({roomId}){
+export default function Channel({roomId, pending, socket}){
     const {appState} = useAppContext();
     const [messages, setMessages] = useState([]);
-    // const [socket, setSocket] = useState(null);
+    const [input, setInput] = useState("");
 
-    // const setupSocket = useCallback(() => {
-    //     setMessages([]);
-    //     const { token } = appState.auth;
-    //     const tmpSocket = io("ws://localhost:3000", {path: "/ws", auth: {token, roomId}});
+    const sendMessage = useCallback(() => {
+        socket.emit(EMITTED_EVENTS.MESSAGE, {message: input, roomId});
+        setInput("");
+    }, [socket, input]);
 
-    //     tmpSocket.on('connect', () => {
-    //         console.log('connected')
-    //     });
+    useEffect(()=>{
+        if(!socket || !socket.id ) return;
 
-    //     tmpSocket.on('user-connected', (data) => {
-    //         console.log('user connected', data)
-    //     });
+        socket.on(RECEIVED_EVENTS.NEW_MESSAGE, (message)=>{
+            console.log("message", message);
+            setMessages(msges => [...msges, message]);
+        });
 
-    //     tmpSocket.on('disconnect', () => {
-    //         console.log('disconnected')
-    //     });
+        return ()=>{
+            socket.off(RECEIVED_EVENTS.NEW_MESSAGE);
+        }
+    }, []);
 
-    //     setSocket(tmpSocket);
-    // }, [socket]);
-
-    // const closeSocket = useCallback(() => {
-    //     if(socket?.id){
-    //         socket.disconnect();
-    //         setSocket(null);
-    //     }else{
-    //         console.log('no socket')
-    //     }
-    // }, [socket]);
-
-    // useEffect(() => {
-    //     closeSocket();
-    //     if(!appState.auth.token) return;
-    //     if(!socket?.id) setupSocket();
-    //     () => closeSocket();
-    // }, [roomId]);
+    if(pending) return <p>Loading...</p>
 
     return(
-        <div className="channel">
-            <h1>Room {roomId}</h1>
-            {socket && socket.id}
+        <div className={style.main}>
+            <div className={style.header}>
+                <h2>ROOM: TBA</h2>
+            </div>
+            <div className={style.content}>
+                <div className={style.messages}>
+                    <div className={style.messagesContainer}>
+                        {messages.length > 0 ? 
+                            messages.map((message, index)=> <MessageItem key={index} message={message}/>)
+                            : <p>No messages</p>
+                        }
+                    </div>
+                    <div className={style.input}>
+                        <input 
+                            type="text" 
+                            placeholder="message" 
+                            value={input} 
+                            onChange={e => setInput(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && sendMessage()}
+                        />
+                        <button 
+                            className="btn blue" 
+                            onClick={sendMessage}>Send</button>
+                    </div>
+                </div>
+
+                <div className={style.users}>
+                    <h3>Users</h3>
+                </div>   
+            </div>
         </div>
     )
 }

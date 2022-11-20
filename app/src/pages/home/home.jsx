@@ -4,12 +4,14 @@ import { io } from "socket.io-client";
 import { useAppContext } from "../../contexts/app-context";
 import RoomItem from "../../components/room-item/room-item";
 import { EMITTED_EVENTS, RECEIVED_EVENTS } from "../../constants/wss-events";
+import style from "./home.module.scss";
 
 export default function Home() {
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const { appState } = useAppContext();
   const [socket, setSocket] = useState(null);
+  const [pending, setPending] = useState(false);
 
   const setupSocket = useCallback(() => {
     const { token } = appState.auth;
@@ -20,7 +22,7 @@ export default function Home() {
 
     tmpSocket.on("connect", (rooms) => {
       console.log("connected", rooms);
-      tmpSocket.emit("get_rooms");
+      tmpSocket.emit(EMITTED_EVENTS.GET_ROOMS);
     });
 
     tmpSocket.on(RECEIVED_EVENTS.LOAD_ROOMS, (data) => {
@@ -29,20 +31,21 @@ export default function Home() {
     });
 
     tmpSocket.on(RECEIVED_EVENTS.USER_JOINED, (data) => {
-      console.log("joined room", data);
+      console.log("A user has entered the room", data);
       //setSelectedRoom(data);
     });
 
-    tmpSocket.on("user-connected", (data) => {
-      console.log("user connected", data);
+    tmpSocket.on(RECEIVED_EVENTS.CURRENT_USER_JOINED, (roomId) => {
+      console.log("You joined room", roomId);
+      setPending(false);
     });
 
-    tmpSocket.on("disconnect", () => {
+    tmpSocket.on(RECEIVED_EVENTS.USER_LEFT, (data) => {
+      console.log("A user has left the room", data);
+    });
+
+    tmpSocket.on(RECEIVED_EVENTS.DISCONNECT, () => {
       console.log("disconnected");
-    });
-
-    tmpSocket.on(RECEIVED_EVENTS.USER_JOINED, (data) => {
-      console.log("joined room", data);
     });
 
     setSocket(tmpSocket);
@@ -58,6 +61,7 @@ export default function Home() {
   }, [socket]);
 
   useEffect(() => {
+    setPending(true);
     if (!socket) return;
     socket.emit(EMITTED_EVENTS.JOIN_ROOM, { roomId: selectedRoom });
   }, [selectedRoom]);
@@ -74,8 +78,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="home">
-      <div className="container">
+    <div className={`${style.main} container`}>
+      <div className={style.rooms}>
         <p>TEST</p>
         {rooms.map((room) => (
           <RoomItem
@@ -84,8 +88,9 @@ export default function Home() {
             onClick={() => setSelectedRoom(room.id)}
           />
         ))}
-        {selectedRoom}
-        {/* {selectedRoom && <Channel roomId={selectedRoom} />} */}
+      </div>
+      <div className={style.channels}>
+        {selectedRoom && <Channel roomId={selectedRoom} pending={pending} socket={socket} />}
       </div>
     </div>
   );

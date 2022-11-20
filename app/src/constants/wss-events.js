@@ -1,9 +1,11 @@
 export const RECEIVED_EVENTS = {
-    USER_JOINED: "user_joined",
+    USER_JOINED: "user_joined_room",
+    CURRENT_USER_JOINED: "current_user_joined_room",
     USER_LEFT: "user_left",
     LEAVE_ROOM: "leave_room",
     NEW_MESSAGE: "new_message",
     LOAD_ROOMS: "load_rooms",
+    DISCONNECT: "disconnect",
 };
 
 export const EMITTED_EVENTS = {
