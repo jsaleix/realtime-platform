@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useAppContext } from "../../contexts/app-context";
-import { EMITTED_EVENTS, RECEIVED_EVENTS } from "../../constants/wss-events";
+import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-events";
 import MessageItem from "../message-item/message-item";
 import style from "./channel.module.scss";
 
@@ -10,20 +10,20 @@ export default function Channel({roomId, pending, socket}){
     const [input, setInput] = useState("");
 
     const sendMessage = useCallback(() => {
-        socket.emit(EMITTED_EVENTS.MESSAGE, {message: input, roomId});
+        socket.emit(ROOM_EMITTED_EVENTS.MESSAGE, {message: input, roomId});
         setInput("");
     }, [socket, input]);
 
     useEffect(()=>{
         if(!socket || !socket.id ) return;
 
-        socket.on(RECEIVED_EVENTS.NEW_MESSAGE, (message)=>{
+        socket.on(ROOM_RECEIVED_EVENTS.NEW_MESSAGE, (message)=>{
             console.log("message", message);
             setMessages(msges => [...msges, message]);
         });
 
         return ()=>{
-            socket.off(RECEIVED_EVENTS.NEW_MESSAGE);
+            socket.off(ROOM_RECEIVED_EVENTS.NEW_MESSAGE);
         }
     }, []);
 

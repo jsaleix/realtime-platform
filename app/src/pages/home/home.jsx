@@ -3,7 +3,7 @@ import Channel from "../../components/channel/channel";
 import { io } from "socket.io-client";
 import { useAppContext } from "../../contexts/app-context";
 import RoomItem from "../../components/room-item/room-item";
-import { EMITTED_EVENTS, RECEIVED_EVENTS } from "../../constants/wss-events";
+import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-events";
 import style from "./home.module.scss";
 
 export default function Home() {
@@ -22,29 +22,29 @@ export default function Home() {
 
     tmpSocket.on("connect", (rooms) => {
       console.log("connected", rooms);
-      tmpSocket.emit(EMITTED_EVENTS.GET_ROOMS);
+      tmpSocket.emit(ROOM_EMITTED_EVENTS.GET_ROOMS);
     });
 
-    tmpSocket.on(RECEIVED_EVENTS.LOAD_ROOMS, (data) => {
+    tmpSocket.on(ROOM_RECEIVED_EVENTS.LOAD_ROOMS, (data) => {
       console.log("rooms", data);
       setRooms(data);
     });
 
-    tmpSocket.on(RECEIVED_EVENTS.USER_JOINED, (data) => {
+    tmpSocket.on(ROOM_RECEIVED_EVENTS.USER_JOINED, (data) => {
       console.log("A user has entered the room", data);
       //setSelectedRoom(data);
     });
 
-    tmpSocket.on(RECEIVED_EVENTS.CURRENT_USER_JOINED, (roomId) => {
+    tmpSocket.on(ROOM_RECEIVED_EVENTS.CURRENT_USER_JOINED, (roomId) => {
       console.log("You joined room", roomId);
       setPending(false);
     });
 
-    tmpSocket.on(RECEIVED_EVENTS.USER_LEFT, (data) => {
+    tmpSocket.on(ROOM_RECEIVED_EVENTS.USER_LEFT, (data) => {
       console.log("A user has left the room", data);
     });
 
-    tmpSocket.on(RECEIVED_EVENTS.DISCONNECT, () => {
+    tmpSocket.on(ROOM_RECEIVED_EVENTS.DISCONNECT, () => {
       console.log("disconnected");
     });
 
@@ -63,7 +63,7 @@ export default function Home() {
   useEffect(() => {
     setPending(true);
     if (!socket) return;
-    socket.emit(EMITTED_EVENTS.JOIN_ROOM, { roomId: selectedRoom });
+    socket.emit(ROOM_EMITTED_EVENTS.JOIN_ROOM, { roomId: selectedRoom });
   }, [selectedRoom]);
 
   useEffect(() => {

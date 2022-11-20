@@ -1,4 +1,5 @@
 const {verifyToken} = require("../lib/jwt");
+const { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS, GLOBAL_EVENTS } = require("../constants/ws-events");
 
 const clients = {};
 let cache_validity = true;
@@ -20,24 +21,6 @@ const rooms = [
 
 const DEFAULT_ROOM = "default";
 
-const EMITTED_EVENTS = {
-    USER_JOINED: "user_joined_room",
-    CURRENT_USER_JOINED: "current_user_joined_room",
-    USER_LEFT: "user_left",
-    LEAVE_ROOM: "leave_room",
-    NEW_MESSAGE: "new_message",
-    LOAD_ROOMS: "load_rooms",
-    DISCONNECT: "disconnect",
-};
-
-const RECEIVED_EVENTS = {
-    JOIN_ROOM: "join_room",
-    LEAVE_ROOM: "leave_room",
-    MESSAGE: "message",
-    GET_ROOMS: "get_rooms",
-    CREATE_ROOM: "create_room",
-};
-
 const formatRooms = (rooms) => {
     return rooms.map((room) => {
         return {
@@ -53,7 +36,7 @@ const leaveRoom = (userId, socket) => {
   const currentRoomId = rooms.findIndex((room) => room.users.includes(userId));
   if(currentRoomId !== -1){
       socket.leave(currentRoomId);
-      socket.to(currentRoomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
+      socket.to(currentRoomId).emit(ROOM_EMITTED_EVENTS.USER_LEFT, userId);
       rooms[currentRoomId].users = rooms[currentRoomId].users.filter((id) => id !== userId);
   }
 };
@@ -70,7 +53,7 @@ exports.websocketManager = (io, socket) => {
   //Saving user's socket id
   clients[userId] = socket.id;
   
-  socket.on( RECEIVED_EVENTS.GET_ROOMS, () => {
+  socket.on( ROOM_RECEIVED_EVENTS.GET_ROOMS, () => {
     if(!cache_validity){
         //Get rooms from database
         //rooms = getRoomsFromDatabase();
@@ -78,12 +61,12 @@ exports.websocketManager = (io, socket) => {
     }
 
     socket.emit(
-        EMITTED_EVENTS.LOAD_ROOMS,
+        ROOM_EMITTED_EVENTS.LOAD_ROOMS,
         formatRooms(rooms)
       );
   });
 
-  socket.on(RECEIVED_EVENTS.JOIN_ROOM, ({roomId}) => {
+  socket.on(ROOM_RECEIVED_EVENTS.JOIN_ROOM, ({roomId}) => {
     //Checking if the room exists
     const roomIdx = rooms.findIndex((room) => room.id === roomId);
     if(roomIdx === -1) return;
@@ -97,9 +80,9 @@ exports.websocketManager = (io, socket) => {
     socket.join(roomId);
     
     rooms[roomIdx].users.push(userId);
-    socket.to(roomId).emit(EMITTED_EVENTS.USER_JOINED, roomId);
-    socket.broadcast.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
-    io.to(socket.id).emit(EMITTED_EVENTS.CURRENT_USER_JOINED, roomId);
+    socket.to(roomId).emit(ROOM_EMITTED_EVENTS.USER_JOINED, roomId);
+    socket.broadcast.emit(ROOM_EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+    io.to(socket.id).emit(ROOM_EMITTED_EVENTS.CURRENT_USER_JOINED, roomId);
     console.log(`User ${userId} joined room ${roomId}`);
   });
 
@@ -115,7 +98,7 @@ exports.websocketManager = (io, socket) => {
     //Move user to default room
   });
 
-  socket.on("disconnect", () => {
+  socket.on(GLOBAL_EVENTS.DISCONNECT, () => {
     if (clients[userId]) {
       delete clients[userId];
       //Removing user from any potential room
@@ -123,11 +106,11 @@ exports.websocketManager = (io, socket) => {
     }
   });
 
-  socket.on(RECEIVED_EVENTS.MESSAGE, ({message, roomId}) => {
+  socket.on(ROOM_RECEIVED_EVENTS.MESSAGE, ({message, roomId}) => {
     if(!roomId ||!message || message === "" ) return;
     //Checking if user is in the room
     //If so, emit message
-    io.to(roomId).emit(EMITTED_EVENTS.NEW_MESSAGE, {message, userId, username: `${user.firstName} ${user.lastName}`});
+    io.to(roomId).emit(ROOM_EMITTED_EVENTS.NEW_MESSAGE, {message, userId, username: `${user.firstName} ${user.lastName}`});
     //Save message to database
   });
 
