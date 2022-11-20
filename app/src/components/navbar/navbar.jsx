@@ -26,7 +26,7 @@ export default function Navbar(){
                     <p>{appState.auth.email}</p>
                     {   appState.auth.isAdmin && 
                             <Link to={"/admin"}>
-                                <button className='btn'>Administration</button>
+                                <button className='btn blue'>Administration</button>
                             </Link>
                     }
                     <button className='btn red' onClick={logout}>Logout</button>
