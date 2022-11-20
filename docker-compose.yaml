@@ -27,14 +27,9 @@ services:
       - db
 
   app:
-    image: node:17.0.0-alpine
-    user: node
-    working_dir: /home/node
-    entrypoint: node
-    tty: true
+    build: ./app
     ports:
       - 8000:8000
-    stdin_open: true
     volumes:
       - ./app:/home/node
 
