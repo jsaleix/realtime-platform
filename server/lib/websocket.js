@@ -100,7 +100,6 @@ exports.websocketManager = (io, socket) => {
     //Checking if user is already in a room
     //...
     const currentRoomId = rooms.findIndex((room) => room.users.includes(userId));
-    console.log(currentRoomId);
     if(currentRoomId !== -1){
         socket.leave(currentRoomId);
         socket.to(currentRoomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
@@ -133,8 +132,12 @@ exports.websocketManager = (io, socket) => {
     if (clients[userId]) {
       delete clients[userId];
       //Check if user is in a room
-      //If so, emit user-disconnected
-      //socket.to(roomId).emit('user-left', userId);
+      const roomId = rooms.findIndex((room) => room.users.includes(userId));
+        if(roomId !== -1){
+            socket.to(roomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
+            rooms[roomId].users = rooms[roomId].users.filter((id) => id !== userId);
+            socket.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+        }
     }
   });
 
