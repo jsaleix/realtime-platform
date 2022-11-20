@@ -12,6 +12,7 @@ export default function Navbar(){
         await AuthService.logout(appState.auth.token);
         dispatch({ action: "LOGOUT"});
     }, [appState]);
+    console.log(appState)
 
     return (
         <div className={style.navbar}>
@@ -23,6 +24,11 @@ export default function Navbar(){
                 {appState.auth.token ?
                 <>
                     <p>{appState.auth.email}</p>
+                    {   appState.auth.isAdmin && 
+                            <Link to={"/admin"}>
+                                <button className='btn'>Administration</button>
+                            </Link>
+                    }
                     <button className='btn red' onClick={logout}>Logout</button>
                 </>
                 : <>

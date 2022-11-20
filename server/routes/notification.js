@@ -6,6 +6,6 @@ const router = new Router();
 
 router.route('/')
     .get(NotificationController.getSSE)
-    .post(checkAdmin, NotificationController.sendNotification);
+    .post(verifyToken, checkAdmin, NotificationController.sendNotification);
 
 module.exports = router;

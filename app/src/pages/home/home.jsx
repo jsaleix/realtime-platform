@@ -47,6 +47,7 @@ export default function Home() {
 
     setSocket(tmpSocket);
   }, [socket]);
+  
 
   const closeSocket = useCallback(() => {
     if (socket?.id) {

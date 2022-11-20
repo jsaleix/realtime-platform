@@ -60,5 +60,5 @@ exports.sendNotification = async (req, res, next) => {
         return res.status(400).json({ message: "envoi un message zebi"});
     }
     broadcastUsers({type: "commerce", data: { message }});
-    return res.status(201);
+    return res.sendStatus(201);
 }
