@@ -1,36 +1,14 @@
 const {verifyToken} = require('../lib/jwt');
 const { randomUUID} = require('crypto');
+const { 
+    broadcastAdmins,
+    broadcastUsers,
+    admins,
+    users,
+    clients 
+} = require('../services/sse');
 
-const admins = {};
-const users = {};
-const clients = {};
-
-const convertMessage = ({ type, ...data }) => {
-    console.log(`event: ${type}\n` + `data: ${JSON.stringify(data)}\n\n`);
-    return `event: ${type}\n` + `data: ${JSON.stringify(data)}\n\n`;
-};
-
-const broadcastAdmins = (message) => {
-    if(Object.values(admins).length > 0){
-        Object.values(admins).map((client_id) => {
-            if(clients[client_id]){
-                clients[client_id].write(convertMessage(message))
-            }
-        });
-    }
-}
-
-const broadcastUsers = (message) => {
-    if(Object.values(users).length > 0){
-        Object.values(users).map((client_id) => {
-            if(clients[client_id]){
-                clients[client_id].write(convertMessage(message));
-            }
-        });
-    }
-}
-
-const getSSE = (req, res, next) => {
+exports.getSSE = (req, res, next) => {
     try {
         let { client_id, token} = req.query;
         let user = null;
@@ -76,8 +54,11 @@ const getSSE = (req, res, next) => {
     }
 }
 
-module.exports = {
-    getSSE,
-    broadcastUsers,
-    broadcastAdmins
+exports.sendNotification = async (req, res, next) => {
+    const { message } = req.body;
+    if(!message){
+        return res.status(400).json({ message: "envoi un message zebi"});
+    }
+    broadcastUsers({type: "commerce", data: { message }});
+    return res.status(201);
 }

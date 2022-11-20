@@ -142,6 +142,4 @@ exports.websocketManager = (io, socket) => {
     //Join room
     //Emit invalide cache
   });
-
-
 };
