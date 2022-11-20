@@ -5,4 +5,5 @@ COPY package.json ./
 COPY package-lock.json ./
 COPY ./ ./
 RUN npm i
-CMD ["node", "index.js"]
+RUN npm install -g nodemon
+CMD ["npm", "run", "dev"]
