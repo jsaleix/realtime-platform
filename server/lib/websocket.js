@@ -36,6 +36,17 @@ const RECEIVED_EVENTS = {
     CREATE_ROOM: "create_room",
 };
 
+const formatRooms = (rooms) => {
+    return rooms.map((room) => {
+        return {
+            id: room.id,
+            name: room.name,
+            users: room.users.length,
+            maxUsers: room.maxUsers,
+        };
+    });
+};
+
 exports.websocketManager = (io, socket) => {
   const token = socket.handshake.auth.token;
   if (!token) socket.disconnect();
@@ -57,17 +68,9 @@ exports.websocketManager = (io, socket) => {
 
     socket.emit(
         EMITTED_EVENTS.LOAD_ROOMS,
-        rooms.map((room) => {
-          return {
-            id: room.id,
-            name: room.name,
-            users: room.users.length,
-            maxUsers: room.maxUsers,
-          };
-        })
+        formatRooms(rooms)
       );
   });
-
 
   socket.on(RECEIVED_EVENTS.JOIN_ROOM, (roomId) => {
     //Checking if the room exists
@@ -84,9 +87,45 @@ exports.websocketManager = (io, socket) => {
     socket.to(roomId).emit("user-connected", toSend);
   });
 
+  socket.on(RECEIVED_EVENTS.JOIN_ROOM, ({roomId}) => {
+    //Checking if the room exists
+    //...
+    const roomIdx = rooms.findIndex((room) => room.id === roomId);
+    if(roomIdx === -1) return;
+
+    //Checking if the room is full
+    //...
+    if(rooms[roomIdx].users.length === rooms[roomIdx].maxUsers) return;
+
+    //Checking if user is already in a room
+    //...
+    const currentRoomId = rooms.findIndex((room) => room.users.includes(userId));
+    console.log(currentRoomId);
+    if(currentRoomId !== -1){
+        socket.leave(currentRoomId);
+        socket.to(currentRoomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
+        rooms[currentRoomId].users = rooms[currentRoomId].users.filter((id) => id !== userId);
+    }
+    
+    socket.join(roomId);
+    
+    rooms[roomIdx].users.push(userId);
+    socket.to(roomId).emit(EMITTED_EVENTS.USER_JOINED, roomId);
+    socket.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+  });
+
   socket.on("leave-room", () => {
     //Checking if user is in a room
     //...
+    const roomId = rooms.findIndex((room) => room.users.includes(userId));
+    if(roomId === -1) return;
+
+    //Removing user from room
+    //...
+    rooms = rooms.filter((room) => room.id !== roomId);
+    socket.to(roomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
+    socket.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+
     //Move user to default room
   });
 
