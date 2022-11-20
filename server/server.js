@@ -4,7 +4,7 @@ const express = require("express");
 const { createServer } = require('http');
 const {Server: WssServer} = require('socket.io');
 const mainRouter = require( "./routes" );
-const websocketManager = require('./lib/websocket').websocketManager;
+const { websocketManager } = require('./services/websocket');
 
 const app = express();
 const httpServer = createServer(app);

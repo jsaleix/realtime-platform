@@ -1,4 +1,4 @@
-const {verifyToken} = require("./jwt");
+const {verifyToken} = require("../lib/jwt");
 
 const clients = {};
 let cache_validity = true;
