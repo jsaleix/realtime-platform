@@ -28,6 +28,11 @@ export default function Home() {
       setRooms(data);
     });
 
+    tmpSocket.on(RECEIVED_EVENTS.USER_JOINED, (data) => {
+      console.log("joined room", data);
+      //setSelectedRoom(data);
+    });
+
     tmpSocket.on("user-connected", (data) => {
       console.log("user connected", data);
     });
@@ -73,7 +78,11 @@ export default function Home() {
       <div className="container">
         <p>TEST</p>
         {rooms.map((room) => (
-          <RoomItem key={room.id} room={room} onClick={() => setSelectedRoom(room.id)} />
+          <RoomItem
+            key={room.id}
+            room={room}
+            onClick={() => setSelectedRoom(room.id)}
+          />
         ))}
         {selectedRoom}
         {/* {selectedRoom && <Channel roomId={selectedRoom} />} */}

@@ -72,21 +72,6 @@ exports.websocketManager = (io, socket) => {
       );
   });
 
-  socket.on(RECEIVED_EVENTS.JOIN_ROOM, (roomId) => {
-    //Checking if the room exists
-    //...
-
-    //Checking if user is already in a room
-    //...
-
-    socket.join(roomId);
-    const toSend = {
-        pastMsgs : [],
-        users: []
-    }
-    socket.to(roomId).emit("user-connected", toSend);
-  });
-
   socket.on(RECEIVED_EVENTS.JOIN_ROOM, ({roomId}) => {
     //Checking if the room exists
     //...
