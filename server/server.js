@@ -34,7 +34,7 @@ io.on('connection', socket => websocketManager(io, socket));
 app.use("/", mainRouter);
 
 app.use((req, res, next) => {
-    return res.sendStatus(500);
+    return res.sendStatus(404);
 })
 
 module.exports = httpServer;
