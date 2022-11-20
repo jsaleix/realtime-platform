@@ -36,6 +36,10 @@ export default function Home() {
       console.log("disconnected");
     });
 
+    tmpSocket.on(RECEIVED_EVENTS.USER_JOINED, (data) => {
+      console.log("joined room", data);
+    });
+
     setSocket(tmpSocket);
   }, [socket]);
 
@@ -47,6 +51,11 @@ export default function Home() {
       console.log("no socket");
     }
   }, [socket]);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.emit(EMITTED_EVENTS.JOIN_ROOM, { roomId: selectedRoom });
+  }, [selectedRoom]);
 
   useEffect(() => {
     closeSocket();
@@ -66,7 +75,8 @@ export default function Home() {
         {rooms.map((room) => (
           <RoomItem key={room.id} room={room} onClick={() => setSelectedRoom(room.id)} />
         ))}
-        {selectedRoom && <Channel roomId={selectedRoom} />}
+        {selectedRoom}
+        {/* {selectedRoom && <Channel roomId={selectedRoom} />} */}
       </div>
     </div>
   );
