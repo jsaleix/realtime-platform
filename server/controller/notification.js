@@ -9,22 +9,24 @@ const {
 } = require('../services/sse');
 
 exports.getSSE = (req, res, next) => {
+    console.log("onéla");
     try {
         let { client_id, token} = req.query;
         let user = null;
         if(!client_id){
             client_id = randomUUID();
         }
-        if(token){
-            user = verifyToken(req.query.token);
-            if(!user || !user.id){
-                res.sendStatus(404);
-            }
-            if(user.isAdmin){
-                admins[user.id] = client_id;
-            } else {
-                users[user.id] = client_id;
-            }
+        if(!token){
+            return res.sendStatus(401);
+        }
+        user = verifyToken(req.query.token);
+        if(!user || !user.id){
+            return res.sendStatus(401);
+        }
+        if(user.isAdmin){
+            admins[user.id] = client_id;
+        } else {
+            users[user.id] = client_id;
         }
         clients[client_id] = res;
 

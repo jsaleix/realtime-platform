@@ -12,7 +12,6 @@ export default function Navbar(){
         await AuthService.logout(appState.auth.token);
         dispatch({ action: "LOGOUT"});
     }, [appState]);
-    console.log(appState)
 
     return (
         <div className={style.navbar}>
