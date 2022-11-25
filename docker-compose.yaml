@@ -16,6 +16,7 @@ services:
     build: ./server
     volumes:
       - ./server:/usr/local/server
+      - /usr/local/server/node_modules
     working_dir: /usr/local/server
     environment:
       - PORT=3000
@@ -32,6 +33,7 @@ services:
       - 8000:8000
     volumes:
       - ./app:/home/node
+      - /home/node/node_modules
 
   adminer:
     image: adminer

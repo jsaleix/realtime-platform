@@ -1,7 +1,9 @@
 FROM node:alpine
 
 WORKDIR /usr/local/server
-COPY package.json ./
-COPY ./ ./
-RUN npm i
+RUN chown node:node ./
+USER node
+COPY package.json package-lock.json* ./
+RUN npm i && npm cache clean --force
+COPY ./ /usr/local/server
 CMD ["npm", "run", "dev"]
