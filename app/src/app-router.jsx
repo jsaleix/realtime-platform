@@ -44,8 +44,8 @@ export default function AppRouter(){
     useEffect(()=>{
 		initEventSource();
 		return () => {
-			if(appState.eventSource && appState.eventSource instanceof EventSource){
-				appState.eventSource.close();
+			if(appState.eventSource && appState.eventSource.readyState !== EventSource.CLOSED){
+                appState.eventSource.close();
 			}
 		}
 	}, [appState.auth]);
