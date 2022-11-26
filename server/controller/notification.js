@@ -9,24 +9,20 @@ const {
 } = require('../services/sse');
 
 exports.getSSE = (req, res, next) => {
-    console.log("onéla");
     try {
         let { client_id, token} = req.query;
         let user = null;
         if(!client_id){
             client_id = randomUUID();
         }
-        if(!token){
-            return res.sendStatus(401);
-        }
         user = verifyToken(req.query.token);
-        if(!user || !user.id){
-            return res.sendStatus(401);
-        }
-        if(user.isAdmin){
-            admins[user.id] = client_id;
-        } else {
-            users[user.id] = client_id;
+        if(user){
+            console.log("connecting with user", user);
+            if(user.isAdmin){
+                admins[user.id] = client_id;
+            } else {
+                users[user.id] = client_id;
+            }
         }
         clients[client_id] = res;
 
@@ -54,6 +50,23 @@ exports.getSSE = (req, res, next) => {
         console.error(err);
         next();
     }
+}
+
+exports.disconnectSSE = (req, res, next) => {
+    console.log('entry');
+    const user = req.user;
+    if(user){
+        if(users[user.id]){
+            console.log(user.id, users[user.id])
+            delete users[user.id];
+        }
+        if(admins[user.id]){
+            console.log(user.id, users[user.id])
+            delete admins[user.id];
+        }
+    }
+    console.log("sending 200");
+    return res.sendStatus(200);
 }
 
 exports.sendNotification = async (req, res, next) => {

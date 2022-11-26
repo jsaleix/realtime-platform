@@ -35,5 +35,5 @@ exports.blacklist = (req, res, next) => {
 		return res.sendStatus(401);
 	}
 	blacklistToken(token);
-	return res.sendStatus(200);
+	next();
 }

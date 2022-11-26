@@ -1,10 +1,11 @@
 import React from "react";
-import { useLayoutEffect, lazy, Suspense } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/navbar/navbar';
 import AdminRooter from "./pages/admin/admin";
 import { useAppContext } from "./contexts/app-context";
 import { SSE_URL } from "./constants/urls";
+import { useCallback } from "react";
 
 const Home = lazy(() => import('./pages/home/home'));
 const Login = lazy(() => import('./pages/login/login'));
@@ -13,7 +14,7 @@ const PageIntrouvable = lazy(() => import("./pages/404/404"));
 
 export default function AppRouter(){
 	const { appState, dispatch } = useAppContext();
-    const initEventSource = () => {
+    const initEventSource = useCallback(() => {
 		let url = SSE_URL + "?";
 		let { client_id } = appState;
 
@@ -24,7 +25,6 @@ export default function AppRouter(){
 		if(appState.auth.token){
 			url += "token=" + appState.auth.token;
 		}
-        console.log(url);
 		const eventSource = new EventSource( url, { withCredentials: true } );
 		
 		eventSource.addEventListener('connect', (e) => {
@@ -39,18 +39,16 @@ export default function AppRouter(){
         })
 
         dispatch({action: "SET_EVENT_SOURCE", payload: eventSource});
-	};
+	}, [appState.auth]);
 
-    useLayoutEffect(()=>{
-		if( !appState.eventSource ){
-			initEventSource();
-		}
+    useEffect(()=>{
+		initEventSource();
 		return () => {
 			if(appState.eventSource && appState.eventSource instanceof EventSource){
 				appState.eventSource.close();
 			}
 		}
-	}, [appState]);
+	}, [appState.auth]);
 
     return(
         <>
