@@ -3,9 +3,9 @@ const { randomUUID} = require('crypto');
 const { 
     broadcastAdmins,
     broadcastUsers,
+    broadcastUser,
     admins,
-    users,
-    clients 
+    users
 } = require('../services/sse');
 
 exports.getSSE = (req, res, next) => {
@@ -16,26 +16,20 @@ exports.getSSE = (req, res, next) => {
             client_id = randomUUID();
         }
         user = verifyToken(req.query.token);
-        if(user){
-            console.log("connecting with user", user);
-            if(user.isAdmin){
-                admins[user.id] = client_id;
-            } else {
-                users[user.id] = client_id;
-            }
+        if(user && user.isAdmin){
+            admins[user.id] = res;
+        } else {
+            users[client_id] = res
         }
-        clients[client_id] = res;
 
         res.on("close", () => {
             if(user){
-                if(users[user.id]){
-                    delete users[user.id];
-                }
-                if(admins[user.id]){
+                if(user && user.isAdmin){
                     delete admins[user.id];
+                }else {
+                    delete users[client_id];
                 }
             }
-            delete clients[client_id];
         });
         
         const headers = {
@@ -45,7 +39,7 @@ exports.getSSE = (req, res, next) => {
         };
         res.writeHead(200, headers);
 
-        broadcastUsers({type: 'connect', client_id}, client_id);
+        broadcastUser({type: 'connect', client_id}, client_id);
     } catch(err){
         console.error(err);
         next();
@@ -74,6 +68,6 @@ exports.sendNotification = async (req, res, next) => {
     if(!message){
         return res.status(400).json({ message: "envoi un message zebi"});
     }
-    broadcastUsers({type: "commerce", data: { message }});
+    broadcastUsers({type: "commerce",  message });
     return res.sendStatus(201);
 }

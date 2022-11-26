@@ -6,6 +6,8 @@ import AdminRooter from "./pages/admin/admin";
 import { useAppContext } from "./contexts/app-context";
 import { SSE_URL } from "./constants/urls";
 import { useCallback } from "react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Home = lazy(() => import('./pages/home/home'));
 const Login = lazy(() => import('./pages/login/login'));
@@ -30,12 +32,16 @@ export default function AppRouter(){
 		eventSource.addEventListener('connect', (e) => {
 			const clientId = JSON.parse(e.data).client_id;
 			dispatch({action: "SET_CLIENT_ID", payload: {client_id: clientId}});
-			console.log("connected");
+			console.log("connected", JSON.parse(e.data));
 		});
 
         eventSource.addEventListener('error', (e) => {
-            console.log()
             console.log(e);
+        })
+
+        eventSource.addEventListener('commerce', (e) => {
+            const data = JSON.parse(e.data).message;
+            toast(data);
         })
 
         dispatch({action: "SET_EVENT_SOURCE", payload: eventSource});
@@ -53,6 +59,7 @@ export default function AppRouter(){
     return(
         <>
             <Navbar/>
+            <ToastContainer />
             <Suspense fallback={<div>Loading...</div>}>
                 <Routes>
                     <Route path="/login" element={<Login/>}/>
