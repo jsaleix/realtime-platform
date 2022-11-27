@@ -13,11 +13,27 @@ export default function Home() {
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [pending, setPending] = useState(false);
+  const [socketSetup, setSocketSetup] = useState(false);
 
-  const setupSocket = useCallback(() => {
+  const removeListeners = useCallback(() => {
+    socket.off(ROOM_RECEIVED_EVENTS.GET_ROOMS);
+    socket.off(ROOM_RECEIVED_EVENTS.LOAD_ROOMS);
+    socket.off(ROOM_RECEIVED_EVENTS.USER_JOINED);
+    socket.off(ROOM_RECEIVED_EVENTS.USER_LEFT);
+    socket.off(ROOM_RECEIVED_EVENTS.DISCONNECT);
+    console.log("%cremoved listeners%s", "color: green");
+  }, [socket]);
+
+  const setListeners = useCallback(() => {
+    if(socketSetup){
+      console.log("socket already setup");
+      return;
+    }
+    console.log("%cListeners set %s", "color: red")
     openSocket();
 
-    socket.on("connect", (rooms) => {
+    socket.on("connect", () => {
+      console.log("CALLED")
       socket.emit(ROOM_EMITTED_EVENTS.GET_ROOMS);
     });
 
@@ -38,19 +54,29 @@ export default function Home() {
       console.log("disconnected");
     });
 
-  }, [socket]);
+  }, [socket, socketSetup]);
 
   useEffect(() => {
     setPending(true);
-    if (!socket) return;
+    if (!socket.connected) return;
     socket.emit(ROOM_EMITTED_EVENTS.JOIN_ROOM, { roomId: selectedRoom });
   }, [selectedRoom]);
 
   useEffect(() => {
     if (!appState.auth.token) return;
-    console.log(socket.connected)
-    if (!socket?.connected) setupSocket();
-    () => closeSocket();
+    if( !socket?.connected && !socketSetup){
+      setSocketSetup(true);
+      setListeners();
+    }else{
+      console.log("Nope")
+    }
+
+    return () => {
+      console.log("cleanup called");
+      removeListeners();
+      setSocketSetup(false);
+      closeSocket();
+    };
   }, [appState.auth.token]);
 
   useEffect(() => {
@@ -65,6 +91,7 @@ export default function Home() {
           <div className={style.rooms}>
             {rooms.map((room) => (
               <RoomItem
+                currentRoom={selectedRoom}
                 key={room.id}
                 room={room}
                 onClick={() => setSelectedRoom(room.id)}

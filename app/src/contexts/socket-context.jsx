@@ -20,7 +20,7 @@ export const useSocketContext = () => {
 
 export const SocketContextProvider = ({children}) => {
     const { appState: { auth:{ token } }, dispatch } = useAppContext();
-    const socket = useMemo(() => token && io(SOCKET_URL, {
+    const socket = useMemo(() => io(SOCKET_URL, {
                                 autoConnect: false,
                                 path: "/ws",
                                 auth: { token },
@@ -28,10 +28,12 @@ export const SocketContextProvider = ({children}) => {
 
     const closeSocket = useCallback(() => {
         socket.close();
+        socket.disconnect();
         console.log('Socket Disconnected');
     }, [socket]);
 
     const openSocket = useCallback(() => {
+        if(!token) return;
         if(socket.disconnected){
             console.log('Socket Connected');
             socket.connect();

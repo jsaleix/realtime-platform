@@ -70,6 +70,7 @@ exports.websocketManager = (io, socket) => {
   clients[userId] = socket.id;
   
   socket.on( ROOM_RECEIVED_EVENTS.GET_ROOMS, () => {
+    console.log("ROOMS REQUESTED");
     if(!cache_validity){
         //Get rooms from database
         //rooms = getRoomsFromDatabase();
@@ -119,6 +120,7 @@ exports.websocketManager = (io, socket) => {
   });
 
   socket.on(GLOBAL_EVENTS.DISCONNECT, () => {
+    console.log("Client disconnected");
     if (clients[userId]) {
       delete clients[userId];
       //Removing user from any potential room
