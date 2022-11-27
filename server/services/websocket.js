@@ -57,6 +57,7 @@ const notifyRoomUpdated = (io, roomId) => {
 };
 
 exports.websocketManager = (io, socket) => {
+  console.log("New client connected");
   const token = socket.handshake.auth.token;
   if (!token) socket.disconnect();
 
@@ -96,7 +97,7 @@ exports.websocketManager = (io, socket) => {
     
     rooms[roomIdx].users.push(userId);
     socket.to(roomId).emit(ROOM_EMITTED_EVENTS.USER_JOINED, roomId);
-    socket.broadcast.emit(ROOM_EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+    io.emit(ROOM_EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
 
     //Sending room info to the current user
     notifyRoomUpdated(io, roomId);

@@ -1,34 +1,10 @@
 import React, { createContext, useContext, useReducer } from "react";
-
-const initData = {
-    socket: null
-}
-
-const socketStateReducder = (state, {action, payload}) => {
-    switch(action){
-        case 'SET_SOCKET':
-            if(state.socket && state.socket.connected){
-                state.socket.disconnect();
-            }
-            return {
-                ...state,
-                socket: payload
-            }
-
-        case 'CLOSE_SOCKET':
-            if(state.socket && state.socket.connected){
-                state.socket.disconnect();
-            }
-
-            return {
-                ...state,
-                socket: null
-            }
-            
-        default:
-            return state;
-    }
-};
+import { useMemo } from "react";
+import { io } from "socket.io-client";
+import { useAppContext } from "./app-context";
+import { SOCKET_URL } from "../constants/urls";
+import { useCallback } from "react";
+import { useEffect } from "react";
 
 const SocketContext = createContext();
 
@@ -43,10 +19,29 @@ export const useSocketContext = () => {
 }
 
 export const SocketContextProvider = ({children}) => {
-    const [socketState, socketDispatch] = useReducer(socketStateReducder, initData);
+    const { appState: { auth:{ token } }, dispatch } = useAppContext();
+    const socket = useMemo(() => token && io(SOCKET_URL, {
+                                autoConnect: false,
+                                path: "/ws",
+                                auth: { token },
+                                }, [token]) )
+
+    const closeSocket = useCallback(() => {
+        socket.close();
+        console.log('Socket Disconnected');
+    }, [socket]);
+
+    const openSocket = useCallback(() => {
+        if(socket.disconnected){
+            console.log('Socket Connected');
+            socket.connect();
+        }else{
+            console.log('Socket Already Connected');
+        }
+    }, [socket]);
 
     return (
-        <SocketContext.Provider value={{socketState, socketDispatch}}>
+        <SocketContext.Provider value={{socket, closeSocket, openSocket}}>
             {children}
         </SocketContext.Provider>
     );
