@@ -4,21 +4,15 @@ const { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS, GLOBAL_EVENTS } = require("..
 const { Room } = require("../models");
 
 const clients = {};
-let cache_validity = true;
+let cache_validity = false;
 
-const rooms = [
+let rooms = [
   {
     id: 1,
-    name: "Room 1",
-    users: [],
-    maxUsers: 10,
-  },
-  {
-    id: 2,
-    name: "Room 2",
-    users: [],
-    maxUsers: 10,
-  },
+    displayName: "Room 1",
+    users: [1,2],
+    maxParticipants: 10,
+  }
 ];
 
 const DEFAULT_ROOM = "default";
@@ -27,11 +21,31 @@ const formatRooms = rooms => {
     return rooms.map((room) => {
         return {
             id: room.id,
-            name: room.name,
+            name: room.displayName,
             users: room.users.length,
-            maxUsers: room.maxUsers,
+            maxUsers: room.maxParticipants,
         };
     });
+};
+
+const translateDbRooms = (dbRooms) => {
+  return dbRooms.map((room) => {
+      let cachedRoom = rooms.find((cachedRoom) => cachedRoom.id === room.id);
+      if(cachedRoom === undefined){
+          return{
+              id: room.id,
+              displayName: room.displayName,
+              users: [],
+              maxParticipants: room.maxParticipants,
+          };
+      }
+      return {
+          id: room.id,
+          displayName: room.displayName,
+          users: cachedRoom.users,
+          maxParticipants: room.maxParticipants,
+      }
+  });
 };
 
 const leaveRoom = (userId, socket) => {
@@ -71,14 +85,14 @@ exports.websocketManager = (io, socket) => {
   //Saving user's socket id
   clients[userId] = socket.id;
   
-  socket.on( ROOM_RECEIVED_EVENTS.GET_ROOMS, () => {
-    console.log("ROOMS REQUESTED");
+  socket.on( ROOM_RECEIVED_EVENTS.GET_ROOMS, async() => {
     if(!cache_validity){
-        //Get rooms from database
-        //rooms = getRoomsFromDatabase();
+        let dbRooms = await Room.findAll({where: {
+            isClosed: false,
+        }, raw: true});
+        rooms = translateDbRooms(dbRooms);
         cache_validity = true;
     }
-
     socket.emit(
         ROOM_EMITTED_EVENTS.LOAD_ROOMS,
         formatRooms(rooms)
@@ -145,8 +159,10 @@ exports.websocketManager = (io, socket) => {
   });
 
   socket.on(ROOM_RECEIVED_EVENTS.CREATE_ROOM, async({displayName, maxParticipants}) => {
+    console.log("in create room");
     if(!displayName || !maxParticipants) {
-        socket.emit(GLOBAL_EVENTS.ERROR, "Missing parameters");
+        console.log("Missing parameters");
+        socket.emit(ROOM_EMITTED_EVENTS.ROOM_CREATION_MISSING_PARAMETERS, "Missing parameters");
         return;
     }
     try{

@@ -6,7 +6,11 @@ export const ROOM_RECEIVED_EVENTS = {
     NEW_MESSAGE: "room_new_message",
     LOAD_ROOMS: "load_rooms",
     DISCONNECT: "disconnect",
-    ROOM_UPDATED: "room_updated"
+    ROOM_UPDATED: "room_updated",
+    ROOM_CREATED: "room_created",
+    ROOM_ALREADY_EXISTS: "room_already_exists",
+    ROOM_CREATION_MISSING_PARAMETERS: "room_creation_missing_parameters",
+    ROOM_CACHE_INVALIDATED: "room_cache_invalidated"
 };
 
 export const ROOM_EMITTED_EVENTS = {
