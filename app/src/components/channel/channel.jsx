@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useAppContext } from "../../contexts/app-context";
 import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-events";
 import MessageItem from "../message-item/message-item";
@@ -10,6 +10,15 @@ export default function Channel({roomId, socket}){
     const [input, setInput] = useState("");
     const [pending, setPending] = useState(true);
     const [roomData, setRoomData] = useState({name: "", users: []});
+    const lastMsgRef = useRef(null);
+    const msgContainerRef = useRef(null);
+
+    const scrollToBottom = useCallback(()=> {
+        if(lastMsgRef.current && msgContainerRef.current){
+            const { offsetTop } = lastMsgRef.current;
+            msgContainerRef.current.scrollTo({ top: offsetTop, behavior: 'smooth' });
+        }
+    }, [lastMsgRef, msgContainerRef]);
 
     const sendMessage = useCallback(() => {
         socket.emit(ROOM_EMITTED_EVENTS.MESSAGE, {message: input, roomId});
@@ -34,13 +43,15 @@ export default function Channel({roomId, socket}){
             setPending(false);
         });
 
-        socket.on()
-
         return ()=>{
             setMessages([]);
             socket.off(ROOM_RECEIVED_EVENTS.NEW_MESSAGE);
         }
     }, [roomId]);
+
+    useEffect(()=>{
+        scrollToBottom();
+    }, [messages]);
 
     if(pending) return <p>Loading...</p>
 
@@ -51,9 +62,12 @@ export default function Channel({roomId, socket}){
             </div>
             <div className={style.content}>
                 <div className={style.messages}>
-                    <div className={style.messagesContainer}>
-                        {messages.length > 0 ? 
-                            messages.map((message, index)=> <MessageItem key={index} message={message}/>)
+                    <div className={style.messagesContainer} ref={msgContainerRef}>
+                        {messages.length > 0 ?
+                            <>
+                                {messages.map((message, index)=> <MessageItem key={index} message={message}/>)}
+                                <div ref={lastMsgRef}/>
+                            </>
                             : <p>No messages</p>
                         }
                     </div>
