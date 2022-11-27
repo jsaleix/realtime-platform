@@ -1,5 +1,7 @@
+const { UniqueConstraintError } = require('sequelize');
 const {verifyToken} = require("../lib/jwt");
 const { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS, GLOBAL_EVENTS } = require("../constants/ws-events");
+const { Room } = require("../models");
 
 const clients = {};
 let cache_validity = true;
@@ -139,13 +141,22 @@ exports.websocketManager = (io, socket) => {
     //Save message to database
   });
 
-  socket.on("create-room", (data) => {
-    //Check if room name is unique
-    //If not, emit error
-
-    //Create room
-    //Save room to database
-    //Join room
-    //Emit invalide cache
+  socket.on(ROOM_RECEIVED_EVENTS.CREATE_ROOM, async({displayName, maxParticipants}) => {
+    if(!displayName || !maxParticipants) {
+        socket.emit(GLOBAL_EVENTS.ERROR, "Missing parameters");
+        return;
+    }
+    try{
+        const room = await Room.create({displayName, maxParticipants});
+        cache_validity = false;
+        socket.broadcast.emit(ROOM_EMITTED_EVENTS.ROOM_CACHE_INVALIDATED);
+        socket.emit(ROOM_EMITTED_EVENTS.ROOM_CREATED, room);
+    }catch(err){
+      if(err instanceof UniqueConstraintError){
+        socket.emit(ROOM_EMITTED_EVENTS.ROOM_ALREADY_EXISTS);
+      }else{
+        console.log(err);
+      }
+    }
   });
 };

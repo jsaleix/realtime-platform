@@ -17,11 +17,12 @@ export default function NotificationForm() {
             alert('Le champ "Nombre de participants maximum" est obligatoire et doit être un nombre supérieur ou égal à 1');
             return;
         }
+        console.log(form);
         //sendForm
-        setForm({
-            displayName: '',
-            maxParticipants: 0,
-        });
+        // setForm({
+        //     displayName: '',
+        //     maxParticipants: 0,
+        // });
     }
 
     const modifyForm = (e) => {
