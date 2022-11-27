@@ -16,7 +16,7 @@ export default function Home() {
   const [socketSetup, setSocketSetup] = useState(false);
 
   const removeListeners = useCallback(() => {
-    socket.off(ROOM_RECEIVED_EVENTS.GET_ROOMS);
+    socket.off("connect");
     socket.off(ROOM_RECEIVED_EVENTS.LOAD_ROOMS);
     socket.off(ROOM_RECEIVED_EVENTS.USER_JOINED);
     socket.off(ROOM_RECEIVED_EVENTS.USER_LEFT);
@@ -58,6 +58,7 @@ export default function Home() {
 
   useEffect(() => {
     setPending(true);
+    console.log("Trying to join room");
     if (!socket.connected) return;
     socket.emit(ROOM_EMITTED_EVENTS.JOIN_ROOM, { roomId: selectedRoom });
   }, [selectedRoom]);
