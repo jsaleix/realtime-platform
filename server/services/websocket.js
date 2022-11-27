@@ -1,4 +1,5 @@
 const {verifyToken} = require("../lib/jwt");
+const { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS, GLOBAL_EVENTS } = require("../constants/ws-events");
 
 const clients = {};
 let cache_validity = true;
@@ -20,23 +21,7 @@ const rooms = [
 
 const DEFAULT_ROOM = "default";
 
-const EMITTED_EVENTS = {
-    USER_JOINED: "user_joined",
-    USER_LEFT: "user_left",
-    LEAVE_ROOM: "leave_room",
-    NEW_MESSAGE: "new_message",
-    LOAD_ROOMS: "load_rooms",
-};
-
-const RECEIVED_EVENTS = {
-    JOIN_ROOM: "join_room",
-    LEAVE_ROOM: "leave_room",
-    MESSAGE: "message",
-    GET_ROOMS: "get_rooms",
-    CREATE_ROOM: "create_room",
-};
-
-const formatRooms = (rooms) => {
+const formatRooms = rooms => {
     return rooms.map((room) => {
         return {
             id: room.id,
@@ -47,19 +32,43 @@ const formatRooms = (rooms) => {
     });
 };
 
+const leaveRoom = (userId, socket) => {
+  const currentRoom = rooms.find((room) => room.users.includes(userId));
+
+  if(currentRoom !== undefined){
+      socket.leave(currentRoom.id);
+      socket.to(currentRoom.id).emit(ROOM_EMITTED_EVENTS.USER_LEFT, userId);
+      currentRoom.users = currentRoom.users.filter((id) => id !== userId);
+  }
+};
+
+const notifyRoomUpdated = (io, roomId) => {
+  const room = rooms.find((room) => room.id === roomId);
+  
+  if(room === undefined) return;
+
+  const infos = {
+    roomId,
+    name: room.name,
+    users: room.users.map((id) => clients[id]),
+  }
+
+  io.to(roomId).emit(ROOM_EMITTED_EVENTS.ROOM_UPDATED, infos);
+};
+
 exports.websocketManager = (io, socket) => {
   const token = socket.handshake.auth.token;
   if (!token) socket.disconnect();
 
   //Check if the user is authenticated, if not disconnect
-  let userId = verifyToken(token);
-  if (!userId) socket.disconnect();
-  userId = userId.id;
+  const user = verifyToken(token);
+  if (!user) socket.disconnect();
+  const userId = user.id;
 
   //Saving user's socket id
   clients[userId] = socket.id;
   
-  socket.on( RECEIVED_EVENTS.GET_ROOMS, () => {
+  socket.on( ROOM_RECEIVED_EVENTS.GET_ROOMS, () => {
     if(!cache_validity){
         //Get rooms from database
         //rooms = getRoomsFromDatabase();
@@ -67,35 +76,33 @@ exports.websocketManager = (io, socket) => {
     }
 
     socket.emit(
-        EMITTED_EVENTS.LOAD_ROOMS,
+        ROOM_EMITTED_EVENTS.LOAD_ROOMS,
         formatRooms(rooms)
       );
   });
 
-  socket.on(RECEIVED_EVENTS.JOIN_ROOM, ({roomId}) => {
+  socket.on(ROOM_RECEIVED_EVENTS.JOIN_ROOM, ({roomId}) => {
     //Checking if the room exists
-    //...
     const roomIdx = rooms.findIndex((room) => room.id === roomId);
     if(roomIdx === -1) return;
 
     //Checking if the room is full
-    //...
     if(rooms[roomIdx].users.length === rooms[roomIdx].maxUsers) return;
 
-    //Checking if user is already in a room
-    //...
-    const currentRoomId = rooms.findIndex((room) => room.users.includes(userId));
-    if(currentRoomId !== -1){
-        socket.leave(currentRoomId);
-        socket.to(currentRoomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
-        rooms[currentRoomId].users = rooms[currentRoomId].users.filter((id) => id !== userId);
-    }
+    //Checking if user is already in a room, if so leave it
+    leaveRoom(userId, socket);
     
     socket.join(roomId);
     
     rooms[roomIdx].users.push(userId);
-    socket.to(roomId).emit(EMITTED_EVENTS.USER_JOINED, roomId);
-    socket.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+    socket.to(roomId).emit(ROOM_EMITTED_EVENTS.USER_JOINED, roomId);
+    socket.broadcast.emit(ROOM_EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+
+    //Sending room info to the current user
+    notifyRoomUpdated(io, roomId);
+
+    io.to(socket.id).emit(ROOM_EMITTED_EVENTS.CURRENT_USER_JOINED, roomId);
+    console.log(`User ${userId} joined room ${roomId}`);
   });
 
   socket.on("leave-room", () => {
@@ -105,32 +112,31 @@ exports.websocketManager = (io, socket) => {
     if(roomId === -1) return;
 
     //Removing user from room
-    //...
-    rooms = rooms.filter((room) => room.id !== roomId);
-    socket.to(roomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
-    socket.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+    leaveRoom(userId, socket);
 
     //Move user to default room
   });
 
-  socket.on("disconnect", () => {
+  socket.on(GLOBAL_EVENTS.DISCONNECT, () => {
     if (clients[userId]) {
       delete clients[userId];
-      //Check if user is in a room
-      const roomId = rooms.findIndex((room) => room.users.includes(userId));
-        if(roomId !== -1){
-            socket.to(roomId).emit(EMITTED_EVENTS.USER_LEFT, userId);
-            rooms[roomId].users = rooms[roomId].users.filter((id) => id !== userId);
-            socket.emit(EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
-        }
+      //Removing user from any potential room
+      leaveRoom(userId, socket);
     }
   });
 
-  socket.on("message", (data) => {
+  socket.on(ROOM_RECEIVED_EVENTS.MESSAGE, ({message, roomId}) => {
+    if(!roomId ||!message || message === "" ) return;
+    console.log(`User ${userId} sent message ${message} in room ${roomId}`);
+
+    console.log(socket.rooms)
     //Checking if user is in the room
+    if( rooms.find( room => room.users.includes(userId)) == -1 ) return;
+
     //If so, emit message
+    io.in(roomId).emit(ROOM_EMITTED_EVENTS.NEW_MESSAGE, {message, userId, username: `${user.firstName} ${user.lastName}`});
+    
     //Save message to database
-    //io.to(roomId).emit('message', data);
   });
 
   socket.on("create-room", (data) => {

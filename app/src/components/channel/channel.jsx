@@ -1,52 +1,83 @@
 import React, { useEffect, useState, useCallback } from "react";
-import {io} from 'socket.io-client';
 import { useAppContext } from "../../contexts/app-context";
+import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-events";
+import MessageItem from "../message-item/message-item";
+import style from "./channel.module.scss";
 
-export default function Channel({roomId}){
+export default function Channel({roomId, socket}){
     const {appState} = useAppContext();
     const [messages, setMessages] = useState([]);
-    // const [socket, setSocket] = useState(null);
+    const [input, setInput] = useState("");
+    const [pending, setPending] = useState(true);
+    const [roomData, setRoomData] = useState({name: "", users: []});
 
-    // const setupSocket = useCallback(() => {
-    //     setMessages([]);
-    //     const { token } = appState.auth;
-    //     const tmpSocket = io("ws://localhost:3000", {path: "/ws", auth: {token, roomId}});
+    const sendMessage = useCallback(() => {
+        socket.emit(ROOM_EMITTED_EVENTS.MESSAGE, {message: input, roomId});
+        setInput("");
+    }, [socket, input]);
 
-    //     tmpSocket.on('connect', () => {
-    //         console.log('connected')
-    //     });
+    useEffect(()=>{
+        if(!socket || !socket.id ) return;
 
-    //     tmpSocket.on('user-connected', (data) => {
-    //         console.log('user connected', data)
-    //     });
+        socket.on(ROOM_RECEIVED_EVENTS.NEW_MESSAGE, (message)=>{
+            console.log("message", message);
+            setMessages(msges => [...msges, message]);
+        });
 
-    //     tmpSocket.on('disconnect', () => {
-    //         console.log('disconnected')
-    //     });
+        socket.on(ROOM_RECEIVED_EVENTS.ROOM_UPDATED, (data)=>{
+            console.log("updated", data);
+            setRoomData(data);
+        });
 
-    //     setSocket(tmpSocket);
-    // }, [socket]);
+        socket.on(ROOM_RECEIVED_EVENTS.CURRENT_USER_JOINED, (roomId) => {
+            console.log("You joined room", roomId);
+            setPending(false);
+        });
 
-    // const closeSocket = useCallback(() => {
-    //     if(socket?.id){
-    //         socket.disconnect();
-    //         setSocket(null);
-    //     }else{
-    //         console.log('no socket')
-    //     }
-    // }, [socket]);
+        socket.on()
 
-    // useEffect(() => {
-    //     closeSocket();
-    //     if(!appState.auth.token) return;
-    //     if(!socket?.id) setupSocket();
-    //     () => closeSocket();
-    // }, [roomId]);
+        return ()=>{
+            setMessages([]);
+            socket.off(ROOM_RECEIVED_EVENTS.NEW_MESSAGE);
+        }
+    }, [roomId]);
+
+    if(pending) return <p>Loading...</p>
 
     return(
-        <div className="channel">
-            <h1>Room {roomId}</h1>
-            {socket && socket.id}
+        <div className={style.main}>
+            <div className={style.header}>
+                <h2>ROOM: {roomData.name}</h2>
+            </div>
+            <div className={style.content}>
+                <div className={style.messages}>
+                    <div className={style.messagesContainer}>
+                        {messages.length > 0 ? 
+                            messages.map((message, index)=> <MessageItem key={index} message={message}/>)
+                            : <p>No messages</p>
+                        }
+                    </div>
+                    <div className={style.input}>
+                        <input 
+                            type="text" 
+                            placeholder="message" 
+                            value={input} 
+                            onChange={e => setInput(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && sendMessage()}
+                        />
+                        <button 
+                            className="btn blue" 
+                            onClick={sendMessage}>Send</button>
+                    </div>
+                </div>
+
+                <div className={style.users}>
+                    <h3>Users</h3>
+                    <ul>
+                        {roomData.users.length > 0 && roomData.users.map((user, index) => <li key={index}>{user}</li>)}
+                    </ul>
+                </div>   
+            </div>
         </div>
     )
 }
