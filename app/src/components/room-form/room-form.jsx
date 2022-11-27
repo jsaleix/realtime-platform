@@ -1,7 +1,11 @@
 import React, { useState }  from "react";
 import styles from "./room-form.module.scss";
+import { useSocketContext } from "../../contexts/socket-context";
+import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-events";
 
-export default function NotificationForm() {
+export default function RoomForm() {
+    const { socket } = useSocketContext();
+
     const [ form, setForm ] = useState({
         displayName: '',
         maxParticipants: 0,
@@ -17,12 +21,26 @@ export default function NotificationForm() {
             alert('Le champ "Nombre de participants maximum" est obligatoire et doit être un nombre supérieur ou égal à 1');
             return;
         }
-        console.log(form);
+        console.log(socket);
+        socket.emit(ROOM_EMITTED_EVENTS.CREATE_ROOM, {});
+        console.log("challah emited")
+        socket.on(ROOM_RECEIVED_EVENTS.ROOM_CREATED, (room) => {
+            console.log(room);
+            setForm({
+                displayName: '',
+                maxParticipants: 0,
+            });
+        })
+        socket.on(ROOM_RECEIVED_EVENTS.ROOM_ALREADY_EXISTS, () => {
+            alert('Une room avec ce nom existe déjà');
+        })
+        socket.on(ROOM_RECEIVED_EVENTS.ROOM_CREATION_MISSING_PARAMETERS, () => {
+            alert('Il manque des paramètres pour créer la room');
+        });
         //sendForm
-        // setForm({
-        //     displayName: '',
-        //     maxParticipants: 0,
-        // });
+        socket.off(ROOM_RECEIVED_EVENTS.ROOM_CREATED);
+        socket.off(ROOM_RECEIVED_EVENTS.ROOM_ALREADY_EXISTS);
+        socket.off(ROOM_RECEIVED_EVENTS.ROOM_CREATION_MISSING_PARAMETERS);
     }
 
     const modifyForm = (e) => {

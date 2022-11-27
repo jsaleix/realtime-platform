@@ -14,6 +14,7 @@ exports.ROOM_EMITTED_EVENTS = {
     ROOM_UPDATED: "room_updated",
     ROOM_CREATED: "room_created",
     ROOM_ALREADY_EXISTS: "room_already_exists",
+    ROOM_CREATION_MISSING_PARAMETERS: "room_creation_missing_parameters",
     ROOM_CACHE_INVALIDATED: "room_cache_invalidated"
 };
 
