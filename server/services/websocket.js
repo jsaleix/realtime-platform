@@ -149,7 +149,7 @@ exports.websocketManager = (io, socket) => {
     try{
         const room = await Room.create({displayName, maxParticipants});
         cache_validity = false;
-        socket.broadcast.emit(ROOM_EMITTED_EVENTS.ROOM_CACHE_INVALIDATED);
+        io.emit(ROOM_EMITTED_EVENTS.ROOM_CACHE_INVALIDATED);
         socket.emit(ROOM_EMITTED_EVENTS.ROOM_CREATED, room);
     }catch(err){
       if(err instanceof UniqueConstraintError){
