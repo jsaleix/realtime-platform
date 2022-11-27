@@ -75,16 +75,20 @@ export default function Home() {
 
   return (
     <div className={`${style.main} container`}>
-      <div className={style.rooms}>
-        <p>TEST</p>
-        {rooms.map((room) => (
-          <RoomItem
-            key={room.id}
-            room={room}
-            onClick={() => setSelectedRoom(room.id)}
-          />
-        ))}
-      </div>
+      {appState.auth.token 
+        ?
+        <div className={style.rooms}>
+          {rooms.map((room) => (
+            <RoomItem
+              key={room.id}
+              room={room}
+              onClick={() => setSelectedRoom(room.id)}
+            />
+            ))}
+          </div>
+        : <p>Please login to see the rooms</p>
+      }
+        
       <div className={style.channels}>
         {selectedRoom && <Channel roomId={selectedRoom} pending={pending} socket={socket} />}
       </div>
