@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import style from "./login.module.scss";
 import AuthService from "../../services/auth.service";
-import { toast } from "react-toastify";
 import { useAppContext } from "../../contexts/app-context";
 import { useNavigate } from "react-router-dom";
+import { useSocketContext } from "../../contexts/socket-context";
+import { displayMsg } from "../../utils/toast";
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const { appState, dispatch } = useAppContext();
+  const { socketState } = useSocketContext();
+
   const [disableBtn, setDisableBtn] = useState(false);
   const navigate = useNavigate();
 
@@ -27,15 +30,7 @@ export default function Login() {
       e.preventDefault();
       setDisableBtn(true);
       if (formData.email === "" || formData.password === "") {
-        toast.error("Empty field(s)", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+        displayMsg("Empty field(s)", "error");
         return;
       }
 
@@ -45,15 +40,7 @@ export default function Login() {
         navigate("/");
       } catch (e) {
         setDisableBtn(false);
-        toast.error(e.message, {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+        displayMsg(e.message, "error");
       }
     },
     [formData]

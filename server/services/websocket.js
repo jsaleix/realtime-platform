@@ -59,6 +59,7 @@ const notifyRoomUpdated = (io, roomId) => {
 };
 
 exports.websocketManager = (io, socket) => {
+  console.log("New client connected");
   const token = socket.handshake.auth.token;
   if (!token) socket.disconnect();
 
@@ -71,6 +72,7 @@ exports.websocketManager = (io, socket) => {
   clients[userId] = socket.id;
   
   socket.on( ROOM_RECEIVED_EVENTS.GET_ROOMS, () => {
+    console.log("ROOMS REQUESTED");
     if(!cache_validity){
         //Get rooms from database
         //rooms = getRoomsFromDatabase();
@@ -98,7 +100,7 @@ exports.websocketManager = (io, socket) => {
     
     rooms[roomIdx].users.push(userId);
     socket.to(roomId).emit(ROOM_EMITTED_EVENTS.USER_JOINED, roomId);
-    socket.broadcast.emit(ROOM_EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+    io.emit(ROOM_EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
 
     //Sending room info to the current user
     notifyRoomUpdated(io, roomId);
@@ -120,6 +122,7 @@ exports.websocketManager = (io, socket) => {
   });
 
   socket.on(GLOBAL_EVENTS.DISCONNECT, () => {
+    console.log("Client disconnected");
     if (clients[userId]) {
       delete clients[userId];
       //Removing user from any potential room

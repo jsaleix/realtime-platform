@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useAppContext } from "../../contexts/app-context";
+import { useSocketContext } from "../../contexts/socket-context";
 import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-events";
 import MessageItem from "../message-item/message-item";
 import style from "./channel.module.scss";
 
-export default function Channel({roomId, socket}){
+export default function Channel({roomId}){
     const {appState} = useAppContext();
+    const { socket } = useSocketContext();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [pending, setPending] = useState(true);
@@ -45,7 +47,10 @@ export default function Channel({roomId, socket}){
 
         return ()=>{
             setMessages([]);
+            console.log("deleted")
             socket.off(ROOM_RECEIVED_EVENTS.NEW_MESSAGE);
+            socket.off(ROOM_RECEIVED_EVENTS.ROOM_UPDATED);
+            socket.off(ROOM_RECEIVED_EVENTS.CURRENT_USER_JOINED);
         }
     }, [roomId]);
 
