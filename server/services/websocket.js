@@ -21,7 +21,7 @@ const rooms = [
 
 const DEFAULT_ROOM = "default";
 
-const formatRooms = (rooms) => {
+const formatRooms = rooms => {
     return rooms.map((room) => {
         return {
             id: room.id,
@@ -33,12 +33,27 @@ const formatRooms = (rooms) => {
 };
 
 const leaveRoom = (userId, socket) => {
-  const currentRoomId = rooms.findIndex((room) => room.users.includes(userId));
-  if(currentRoomId !== -1){
-      socket.leave(currentRoomId);
-      socket.to(currentRoomId).emit(ROOM_EMITTED_EVENTS.USER_LEFT, userId);
-      rooms[currentRoomId].users = rooms[currentRoomId].users.filter((id) => id !== userId);
+  const currentRoom = rooms.find((room) => room.users.includes(userId));
+
+  if(currentRoom !== undefined){
+      socket.leave(currentRoom.id);
+      socket.to(currentRoom.id).emit(ROOM_EMITTED_EVENTS.USER_LEFT, userId);
+      currentRoom.users = currentRoom.users.filter((id) => id !== userId);
   }
+};
+
+const notifyRoomUpdated = (io, roomId) => {
+  const room = rooms.find((room) => room.id === roomId);
+  
+  if(room === undefined) return;
+
+  const infos = {
+    roomId,
+    name: room.name,
+    users: room.users.map((id) => clients[id]),
+  }
+
+  io.to(roomId).emit(ROOM_EMITTED_EVENTS.ROOM_UPDATED, infos);
 };
 
 exports.websocketManager = (io, socket) => {
@@ -82,6 +97,10 @@ exports.websocketManager = (io, socket) => {
     rooms[roomIdx].users.push(userId);
     socket.to(roomId).emit(ROOM_EMITTED_EVENTS.USER_JOINED, roomId);
     socket.broadcast.emit(ROOM_EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
+
+    //Sending room info to the current user
+    notifyRoomUpdated(io, roomId);
+
     io.to(socket.id).emit(ROOM_EMITTED_EVENTS.CURRENT_USER_JOINED, roomId);
     console.log(`User ${userId} joined room ${roomId}`);
   });
@@ -108,9 +127,15 @@ exports.websocketManager = (io, socket) => {
 
   socket.on(ROOM_RECEIVED_EVENTS.MESSAGE, ({message, roomId}) => {
     if(!roomId ||!message || message === "" ) return;
+    console.log(`User ${userId} sent message ${message} in room ${roomId}`);
+
+    console.log(socket.rooms)
     //Checking if user is in the room
+    if( rooms.find( room => room.users.includes(userId)) == -1 ) return;
+
     //If so, emit message
-    io.to(roomId).emit(ROOM_EMITTED_EVENTS.NEW_MESSAGE, {message, userId, username: `${user.firstName} ${user.lastName}`});
+    io.in(roomId).emit(ROOM_EMITTED_EVENTS.NEW_MESSAGE, {message, userId, username: `${user.firstName} ${user.lastName}`});
+    
     //Save message to database
   });
 

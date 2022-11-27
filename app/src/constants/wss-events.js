@@ -6,6 +6,7 @@ export const ROOM_RECEIVED_EVENTS = {
     NEW_MESSAGE: "room_new_message",
     LOAD_ROOMS: "load_rooms",
     DISCONNECT: "disconnect",
+    ROOM_UPDATED: "room_updated"
 };
 
 export const ROOM_EMITTED_EVENTS = {

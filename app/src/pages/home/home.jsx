@@ -35,11 +35,6 @@ export default function Home() {
       //setSelectedRoom(data);
     });
 
-    tmpSocket.on(ROOM_RECEIVED_EVENTS.CURRENT_USER_JOINED, (roomId) => {
-      console.log("You joined room", roomId);
-      setPending(false);
-    });
-
     tmpSocket.on(ROOM_RECEIVED_EVENTS.USER_LEFT, (data) => {
       console.log("A user has left the room", data);
     });

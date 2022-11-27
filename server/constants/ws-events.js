@@ -10,7 +10,8 @@ exports.ROOM_EMITTED_EVENTS = {
     USER_LEFT: "user_left_room",
     LEAVE_ROOM: "leave_room",
     NEW_MESSAGE: "room_new_message",
-    LOAD_ROOMS: "load_rooms"
+    LOAD_ROOMS: "load_rooms",
+    ROOM_UPDATED: "room_updated",
 };
 
 exports.ROOM_RECEIVED_EVENTS = {
