@@ -80,6 +80,14 @@ const notifyRoomUpdated = (io, roomId) => {
   io.to(roomId).emit(ROOM_EMITTED_EVENTS.ROOM_UPDATED, infos);
 };
 
+const initRooms = async() => {
+  let dbRooms = await Room.findAll({where: {
+      isClosed: false,
+  }, raw: true});
+  rooms = translateDbRooms(dbRooms);
+  return;
+}
+
 exports.websocketManager = (io, socket) => {
   console.log("New client connected");
   const token = socket.handshake.auth.token;
@@ -94,13 +102,6 @@ exports.websocketManager = (io, socket) => {
   clients[userId] = socket.id;
   
   socket.on( ROOM_RECEIVED_EVENTS.GET_ROOMS, async() => {
-    if(!cache_validity){
-        let dbRooms = await Room.findAll({where: {
-            isClosed: false,
-        }, raw: true});
-        rooms = translateDbRooms(dbRooms);
-        cache_validity = true;
-    }
     socket.emit(
         ROOM_EMITTED_EVENTS.LOAD_ROOMS,
         formatRooms(rooms)
@@ -174,7 +175,12 @@ exports.websocketManager = (io, socket) => {
     try{
         const roomSocketId =  sluggifyRoomName(displayName);
         const room = await Room.create({displayName, maxParticipants, socketId: roomSocketId});
-        cache_validity = false;
+        rooms.push({
+            id: room.id,
+            displayName: room.displayName,
+            users: [],
+            maxParticipants: room.maxParticipants,
+        });
         io.emit(ROOM_EMITTED_EVENTS.ROOM_CACHE_INVALIDATED);
         socket.emit(ROOM_EMITTED_EVENTS.ROOM_CREATED, room);
     }catch(err){
@@ -186,3 +192,5 @@ exports.websocketManager = (io, socket) => {
     }
   });
 };
+
+initRooms();

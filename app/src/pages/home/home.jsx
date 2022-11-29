@@ -17,6 +17,7 @@ export default function Home() {
 
   const removeListeners = useCallback(() => {
     socket.off("connect");
+    socket.off(ROOM_RECEIVED_EVENTS.ROOM_CACHE_INVALIDATED);
     socket.off(ROOM_RECEIVED_EVENTS.LOAD_ROOMS);
     socket.off(ROOM_RECEIVED_EVENTS.USER_JOINED);
     socket.off(ROOM_RECEIVED_EVENTS.USER_LEFT);
@@ -34,6 +35,10 @@ export default function Home() {
 
     socket.on("connect", () => {
       console.log("CALLED")
+      socket.emit(ROOM_EMITTED_EVENTS.GET_ROOMS);
+    });
+
+    socket.on(ROOM_RECEIVED_EVENTS.ROOM_CACHE_INVALIDATED, () => {
       socket.emit(ROOM_EMITTED_EVENTS.GET_ROOMS);
     });
 
