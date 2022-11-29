@@ -28,6 +28,14 @@ const formatRooms = rooms => {
     });
 };
 
+const sluggifyRoomName = (name) => {
+    return name.toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+};
+
 const translateDbRooms = (dbRooms) => {
   return dbRooms.map((room) => {
       let cachedRoom = rooms.find((cachedRoom) => cachedRoom.id === room.id);
@@ -159,14 +167,13 @@ exports.websocketManager = (io, socket) => {
   });
 
   socket.on(ROOM_RECEIVED_EVENTS.CREATE_ROOM, async({displayName, maxParticipants}) => {
-    console.log("in create room");
     if(!displayName || !maxParticipants) {
-        console.log("Missing parameters");
         socket.emit(ROOM_EMITTED_EVENTS.ROOM_CREATION_MISSING_PARAMETERS, "Missing parameters");
         return;
     }
     try{
-        const room = await Room.create({displayName, maxParticipants});
+        const roomSocketId =  sluggifyRoomName(displayName);
+        const room = await Room.create({displayName, maxParticipants, socketId: roomSocketId});
         cache_validity = false;
         io.emit(ROOM_EMITTED_EVENTS.ROOM_CACHE_INVALIDATED);
         socket.emit(ROOM_EMITTED_EVENTS.ROOM_CREATED, room);
