@@ -11,34 +11,24 @@ const navLinkStyle = ({isActive}) => isActive ? style.active : ""
 
 export default function Admin() {
 	const { appState } = useAppContext();
-    const [ hasAccess, setHasAccess ] = useState(false);
 
-    useEffect(() => {
-        if(appState.auth.isAdmin === true){
-            setHasAccess(true);
-        }
-    }, [appState.auth]);
+    if(appState.auth.isAdmin === false){
+        return <div className="container">RESTRICTED ACCESS</div>
+    }
 
     return (
-        <div>
-        {
-            hasAccess ?
-            (<>
-                <div className="container">
-                    <div className={style.admin_nav}>
-                        <NavLink className={navLinkStyle} to={"/admin"} end>Realtime Panel</NavLink>
-                        <NavLink className={navLinkStyle} to="/admin/users">Users</NavLink>
-                    </div>
+        <>
+            <div className="container">
+                <div className={style.admin_nav}>
+                    <NavLink className={navLinkStyle} to={"/admin"} end>Realtime Panel</NavLink>
+                    <NavLink className={navLinkStyle} to="/admin/users">Users</NavLink>
                 </div>
-                <Routes>
-                    <Route exact path="/" element={<AdminPannel/>} />
-                    <Route path="/users" element={<UserList/>}/>
-                    <Route path="*" element={<PageIntrouvable />} />
-                </Routes>
-            </>)
-            :
-            "FORBIDDEN"
-        }
-        </div>
+            </div>
+            <Routes>
+                <Route exact path="/" element={<AdminPannel/>} />
+                <Route path="/users" element={<UserList/>}/>
+                <Route path="*" element={<PageIntrouvable />} />
+            </Routes>
+        </>
     );
 }
