@@ -5,17 +5,7 @@ const { Room } = require("../models");
 
 const clients = {};
 let cache_validity = false;
-
-let rooms = [
-  {
-    id: 1,
-    displayName: "Room 1",
-    users: [1,2],
-    maxParticipants: 10,
-  }
-];
-
-const DEFAULT_ROOM = "default";
+let rooms = [];
 
 const formatRooms = rooms => {
     return rooms.map((room) => {

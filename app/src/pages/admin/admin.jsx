@@ -11,7 +11,7 @@ export default function Admin() {
 
     useEffect(() => {
         if(appState.auth.isAdmin === true){
-        setHasAccess(true);
+            setHasAccess(true);
         }
     }, [appState.auth]);
 

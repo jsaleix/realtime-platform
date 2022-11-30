@@ -1,5 +1,11 @@
-input[type="text"], input[type="password"], input[type="email"]{
+input, input[type="text"], input[type="password"], input[type="email"], .btn{
     padding: 5px 10px;
     border: 1px solid #ccc;
     outline: none;
+
+    &.disabled{
+        background-color: gray !important;
+        color: rgb(210, 210, 210) !important;
+        cursor: not-allowed;
+    }
 }

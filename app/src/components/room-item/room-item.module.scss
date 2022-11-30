@@ -5,9 +5,11 @@
     width: 100%;
     flex-direction: column;
     border-bottom: 1px solid rgb(218, 218, 218);
-    
+    overflow: hidden;
+
     .information{
         display: flex;
+        align-items: center;
         button{
             margin-left: auto;
             align-items: center;

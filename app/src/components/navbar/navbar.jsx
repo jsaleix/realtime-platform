@@ -21,23 +21,25 @@ export default function Navbar(){
 
             <div className={style.actions}>
                 {appState.auth.token ?
-                <>
-                    <p>{appState.auth.email}</p>
-                    {   appState.auth.isAdmin && 
-                            <Link to={"/admin"}>
-                                <button className='btn blue'>Administration</button>
-                            </Link>
-                    }
-                    <button className='btn red' onClick={logout}>Logout</button>
-                </>
-                : <>
+                    (<>
+                        <div className={style.user_information}>
+                            <p>{appState.auth.email}</p>
+                        </div>
+                        {   appState.auth.isAdmin && 
+                                <Link to={"/admin"}>
+                                    <button className='btn blue'>Administration</button>
+                                </Link>
+                        }
+                        <button className='btn red' onClick={logout}>Logout</button>
+                    </>)
+                : (<>
                     <Link to={"/login"} className={style.login}>
                         <button className='btn blue'>Login</button>
                     </Link>
                     <Link to={"/sign-up"} className={style.signUp}>
                         <button className='btn blue'>Sign Up</button>
                     </Link>
-                </>
+                </>)
                 }
             </div>
         </div>
