@@ -28,6 +28,14 @@ const formatRooms = rooms => {
     });
 };
 
+const sluggifyRoomName = (name) => {
+    return name.toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+};
+
 const translateDbRooms = (dbRooms) => {
   return dbRooms.map((room) => {
       let cachedRoom = rooms.find((cachedRoom) => cachedRoom.id === room.id);
@@ -72,6 +80,14 @@ const notifyRoomUpdated = (io, roomId) => {
   io.to(roomId).emit(ROOM_EMITTED_EVENTS.ROOM_UPDATED, infos);
 };
 
+const initRooms = async() => {
+  let dbRooms = await Room.findAll({where: {
+      isClosed: false,
+  }, raw: true});
+  rooms = translateDbRooms(dbRooms);
+  return;
+}
+
 exports.websocketManager = (io, socket) => {
   console.log("New client connected");
   const token = socket.handshake.auth.token;
@@ -86,13 +102,6 @@ exports.websocketManager = (io, socket) => {
   clients[userId] = socket.id;
   
   socket.on( ROOM_RECEIVED_EVENTS.GET_ROOMS, async() => {
-    if(!cache_validity){
-        let dbRooms = await Room.findAll({where: {
-            isClosed: false,
-        }, raw: true});
-        rooms = translateDbRooms(dbRooms);
-        cache_validity = true;
-    }
     socket.emit(
         ROOM_EMITTED_EVENTS.LOAD_ROOMS,
         formatRooms(rooms)
@@ -159,15 +168,19 @@ exports.websocketManager = (io, socket) => {
   });
 
   socket.on(ROOM_RECEIVED_EVENTS.CREATE_ROOM, async({displayName, maxParticipants}) => {
-    console.log("in create room");
     if(!displayName || !maxParticipants) {
-        console.log("Missing parameters");
         socket.emit(ROOM_EMITTED_EVENTS.ROOM_CREATION_MISSING_PARAMETERS, "Missing parameters");
         return;
     }
     try{
-        const room = await Room.create({displayName, maxParticipants});
-        cache_validity = false;
+        const roomSocketId =  sluggifyRoomName(displayName);
+        const room = await Room.create({displayName, maxParticipants, socketId: roomSocketId});
+        rooms.push({
+            id: room.id,
+            displayName: room.displayName,
+            users: [],
+            maxParticipants: room.maxParticipants,
+        });
         io.emit(ROOM_EMITTED_EVENTS.ROOM_CACHE_INVALIDATED);
         socket.emit(ROOM_EMITTED_EVENTS.ROOM_CREATED, room);
     }catch(err){
@@ -179,3 +192,5 @@ exports.websocketManager = (io, socket) => {
     }
   });
 };
+
+initRooms();

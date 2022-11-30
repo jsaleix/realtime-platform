@@ -2,14 +2,42 @@ import React, { useState }  from "react";
 import styles from "./room-form.module.scss";
 import { useSocketContext } from "../../contexts/socket-context";
 import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-events";
+import { useEffect } from "react";
 
 export default function RoomForm() {
     const { socket } = useSocketContext();
+    const [ socketSetup, setSocketSetup ] = useState(false);
 
     const [ form, setForm ] = useState({
         displayName: '',
         maxParticipants: 0,
     })
+
+    useEffect(() => {
+        if(!socketSetup){
+            socket.on(ROOM_RECEIVED_EVENTS.ROOM_CREATED, (room) => {
+                setForm({
+                    displayName: '',
+                    maxParticipants: 0,
+                });
+                console.log("room created", room);
+            })
+            socket.on(ROOM_RECEIVED_EVENTS.ROOM_ALREADY_EXISTS, () => {
+                alert('Une room avec ce nom existe déjà');
+            })
+            socket.on(ROOM_RECEIVED_EVENTS.ROOM_CREATION_MISSING_PARAMETERS, () => {
+                alert("Il manque des paramètres");
+            });
+            setSocketSetup(true);
+        }
+
+        return () => {
+            socket.off(ROOM_RECEIVED_EVENTS.ROOM_CREATED);
+            socket.off(ROOM_RECEIVED_EVENTS.ROOM_ALREADY_EXISTS);
+            socket.off(ROOM_RECEIVED_EVENTS.ROOM_CREATION_MISSING_PARAMETERS);
+        }
+
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -22,25 +50,8 @@ export default function RoomForm() {
             return;
         }
         console.log(socket);
-        socket.emit(ROOM_EMITTED_EVENTS.CREATE_ROOM, {});
-        console.log("challah emited")
-        socket.on(ROOM_RECEIVED_EVENTS.ROOM_CREATED, (room) => {
-            console.log(room);
-            setForm({
-                displayName: '',
-                maxParticipants: 0,
-            });
-        })
-        socket.on(ROOM_RECEIVED_EVENTS.ROOM_ALREADY_EXISTS, () => {
-            alert('Une room avec ce nom existe déjà');
-        })
-        socket.on(ROOM_RECEIVED_EVENTS.ROOM_CREATION_MISSING_PARAMETERS, () => {
-            alert('Il manque des paramètres pour créer la room');
-        });
+        socket.emit(ROOM_EMITTED_EVENTS.CREATE_ROOM, form);
         //sendForm
-        socket.off(ROOM_RECEIVED_EVENTS.ROOM_CREATED);
-        socket.off(ROOM_RECEIVED_EVENTS.ROOM_ALREADY_EXISTS);
-        socket.off(ROOM_RECEIVED_EVENTS.ROOM_CREATION_MISSING_PARAMETERS);
     }
 
     const modifyForm = (e) => {

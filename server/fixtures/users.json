@@ -37,7 +37,7 @@
         "data": {
             "id": 1,
             "displayName": "Les chassis en or massif",
-            "socketId": "chassis",
+            "socketId": "les-chassis-en-or-massif",
             "maxParticipants": 20,
             "isClosed": false 
         }
@@ -47,7 +47,7 @@
         "data": {
             "id": 2,
             "displayName": "Le SSE, pourquoi ?",
-            "socketId": "sse",
+            "socketId": "le-sse-pourquoi",
             "maxParticipants": 3,
             "isClosed": false 
         }
