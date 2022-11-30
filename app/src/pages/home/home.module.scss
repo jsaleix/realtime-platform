@@ -1,11 +1,26 @@
+@import "../../styles/responsive.scss";
+
 .main{
     display: flex;
-
+    
+    @include sm{
+        flex-direction: column;
+    }
     .rooms{
         width: 20%;
+        border-right: 1px solid gray;
+
+        @include sm{
+            width: 100%;
+            max-height: 250px;
+            overflow: scroll;
+        }
     }
 
     .channels{
         width: 80%;
+        @include sm{
+            width: 100%;
+        }
     }
 }
