@@ -8,3 +8,9 @@ exports.CONVERSATION_STATUS = {
     "ACCEPTED": "ACCEPTED",
     "CLOSED": "CLOSED"
 }
+
+exports.APPOINTMENT_TYPE = {
+    "ESSAY": 30,
+    "MAINTENANCE": 120,
+    "REVISION": 60
+}

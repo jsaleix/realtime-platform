@@ -2,6 +2,7 @@ const Sequelize = require("sequelize");
 
 const connection = new Sequelize(process.env.DATABASE_URL, {
   	useNewUrlParser: true,
+	logging: false,
 });
 
 connection

@@ -26,3 +26,19 @@ exports.ROOM_RECEIVED_EVENTS = {
     GET_ROOMS: "get_rooms",
     CREATE_ROOM: "create_room"
 };
+
+exports.CHATBOT_EMITTED_EVENTS = {
+    CURRENT_WEEK_APPOINTMENTS: "current_week_appointments",
+    NEXT_WEEK_APPOINTMENTS: "next_week_appointments",
+    NO_AVAILABLE_APPOINTMENTS: "no_available_appointments",
+    CONTACT_EMAIL: "contact_email",
+    CONTACT_PHONE: "contact_phone",
+    END: "end",
+};
+
+exports.CHATBOT_RECEIVED_EVENTS = {
+    APPOINTMENT_DISPONIBILITY: "appointment_disponibility",
+    CONVERSATION_CONTACT_EMAIL: "conversation_contact_email",
+    CONVERSATION_CONTACT_PHONE: "conversation_contact_phone",
+    END: "end",
+};

@@ -6,6 +6,7 @@ import RoomItem from "../../components/room-item/room-item";
 import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-events";
 import style from "./home.module.scss";
 import { useSocketContext } from "../../contexts/socket-context";
+import ChatBot from "../../components/chatbot/chatbot";
 
 export default function Home() {
   const { appState } = useAppContext();
@@ -108,10 +109,10 @@ export default function Home() {
               {selectedRoom && <Channel roomId={selectedRoom} pending={pending}/>}
             </div>
         </>
-        : <p>Please login to see the rooms</p>
+        : 
+        <p>Please login to see the rooms</p>
       }
-        
-      
+      <ChatBot/>
     </div>
   );
 }

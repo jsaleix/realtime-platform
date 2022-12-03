@@ -75,5 +75,77 @@
             "roomId": 1,
             "sender": 2
         }
+    },
+    {
+        "model": "appointment",
+        "data":{
+            "type": "MAINTENANCE",
+            "date": "2022-12-08 09:00:00+00",
+            "duration": 120
+        }
+    },
+    {
+        "model": "appointment",
+        "data":{
+            "type": "MAINTENANCE",
+            "date": "2022-12-08 11:00:00+00",
+            "duration": 120
+        }
+    },
+    {
+        "model": "appointment",
+        "data":{
+            "type": "MAINTENANCE",
+            "date": "2022-12-08 13:00:00+00",
+            "duration": 120
+        }
+    },
+    {
+        "model": "appointment",
+        "data":{
+            "type": "MAINTENANCE",
+            "date": "2022-12-08 15:00:00+00",
+            "duration": 120
+        }
+    },
+    {
+        "model": "appointment",
+        "data":{
+            "type": "REVISION",
+            "date": "2022-12-08 17:00:00+00",
+            "duration": 60
+        }
+    },
+    {
+        "model": "appointment",
+        "data":{
+            "type": "ESSAY",
+            "date": "2022-12-09 09:00:00+00",
+            "duration": 30
+        }
+    },
+    {
+        "model": "appointment",
+        "data":{
+            "type": "REVISION",
+            "date": "2022-12-09 09:30:00+00",
+            "duration": 60
+        }
+    },
+    {
+        "model": "appointment",
+        "data":{
+            "type": "ESSAY",
+            "date": "2022-12-09 10:30:00+00",
+            "duration": 30
+        }
+    },
+    {
+        "model": "appointment",
+        "data":{
+            "type": "MAINTENANCE",
+            "date": "2022-12-09 11:00:00+00",
+            "duration": 120
+        }
     }
 ]
