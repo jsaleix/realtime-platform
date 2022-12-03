@@ -30,6 +30,11 @@ export default function Channel({roomId}){
     useEffect(()=>{
         if(!socket || !socket.id ) return;
 
+        socket.on(ROOM_RECEIVED_EVENTS.INIT_MESSAGES, ({messages}) => {
+            console.log(messages);
+            setMessages(messages);
+        })
+
         socket.on(ROOM_RECEIVED_EVENTS.NEW_MESSAGE, (message)=>{
             console.log("message", message);
             setMessages(msges => [...msges, message]);
@@ -48,6 +53,7 @@ export default function Channel({roomId}){
         return ()=>{
             setMessages([]);
             console.log("deleted")
+            socket.off(ROOM_RECEIVED_EVENTS.INIT_MESSAGES);
             socket.off(ROOM_RECEIVED_EVENTS.NEW_MESSAGE);
             socket.off(ROOM_RECEIVED_EVENTS.ROOM_UPDATED);
             socket.off(ROOM_RECEIVED_EVENTS.CURRENT_USER_JOINED);
@@ -70,7 +76,9 @@ export default function Channel({roomId}){
                     <div className={style.messagesContainer} ref={msgContainerRef}>
                         {messages.length > 0 ?
                             <>
-                                {messages.map((message, index)=> <MessageItem key={index} message={message}/>)}
+                                {messages.map((message, index)=> 
+                                    <MessageItem key={index} message={message} displayUser={messages[index-1] === undefined || message.userId !== messages[index-1].userId}/>)
+                                }
                                 <div ref={lastMsgRef}/>
                             </>
                             : <p>No messages</p>

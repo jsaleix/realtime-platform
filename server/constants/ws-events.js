@@ -9,6 +9,7 @@ exports.ROOM_EMITTED_EVENTS = {
     CURRENT_USER_JOINED: "current_user_joined_room",
     USER_LEFT: "user_left_room",
     LEAVE_ROOM: "leave_room",
+    INIT_MESSAGES: "init_messages",
     NEW_MESSAGE: "room_new_message",
     LOAD_ROOMS: "load_rooms",
     ROOM_UPDATED: "room_updated",

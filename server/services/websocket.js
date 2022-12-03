@@ -1,7 +1,7 @@
-const { UniqueConstraintError } = require('sequelize');
+const { UniqueConstraintError, fn, col } = require('sequelize');
 const {verifyToken} = require("../lib/jwt");
 const { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS, GLOBAL_EVENTS } = require("../constants/ws-events");
-const { Room } = require("../models");
+const { Room, Message, User } = require("../models");
 
 const clients = {};
 let cache_validity = false;
@@ -98,10 +98,29 @@ exports.websocketManager = (io, socket) => {
       );
   });
 
-  socket.on(ROOM_RECEIVED_EVENTS.JOIN_ROOM, ({roomId}) => {
+  socket.on(ROOM_RECEIVED_EVENTS.JOIN_ROOM, async ({roomId}) => {
     //Checking if the room exists
     const roomIdx = rooms.findIndex((room) => room.id === roomId);
     if(roomIdx === -1) return;
+    let messages = await Message.findAll({
+      where: {
+        roomId, 
+      },
+      include: [
+        { model: User, attributes: ['id', 'firstName', 'lastName'] }
+      ],
+      order: [
+        ['createdAt', 'ASC'],
+      ],
+    });
+    messages = messages.map((message) => {
+        return {
+          message: message.content,
+          userId: message.user.id,
+          username: message.user.firstName + " " + message.user.lastName,
+        }
+    })
+
 
     //Checking if the room is full
     if(rooms[roomIdx].users.length === rooms[roomIdx].maxUsers) return;
@@ -110,7 +129,7 @@ exports.websocketManager = (io, socket) => {
     leaveRoom(userId, socket);
     
     socket.join(roomId);
-    
+    socket.emit(ROOM_EMITTED_EVENTS.INIT_MESSAGES, {messages});
     rooms[roomIdx].users.push(userId);
     socket.to(roomId).emit(ROOM_EMITTED_EVENTS.USER_JOINED, roomId);
     io.emit(ROOM_EMITTED_EVENTS.LOAD_ROOMS, formatRooms(rooms));
@@ -143,11 +162,15 @@ exports.websocketManager = (io, socket) => {
     }
   });
 
-  socket.on(ROOM_RECEIVED_EVENTS.MESSAGE, ({message, roomId}) => {
+  socket.on(ROOM_RECEIVED_EVENTS.MESSAGE, async ({message, roomId}) => {
     if(!roomId ||!message || message === "" ) return;
     console.log(`User ${userId} sent message ${message} in room ${roomId}`);
-
-    console.log(socket.rooms)
+    const dbMessage = await Message.create({
+        content: message,
+        sender: userId,
+        roomId,
+    });
+    console.log(dbMessage);
     //Checking if user is in the room
     if( rooms.find( room => room.users.includes(userId)) == -1 ) return;
 
