@@ -12,6 +12,30 @@ const maxAppointmentTimeByDay = ((workingHours.end - workingHours.start)*60);
 const maxAppointmentTimeByWeek = (maxAppointmentTimeByDay * 5);
 
 exports.chatbotHandler = (io, socket) => {
+    socket.emit("message_received", {id: "origin", ...QUESTIONS["origin"]});
+
+    socket.on("answer", answer => {
+        const requested_question = QUESTIONS[answer.next];
+        if( !requested_question?.prompt ){
+          socket.emit("message_received", {id: "origin", ...QUESTIONS["origin"]});
+          return;
+        }else{
+          // if (typeof nextQuestion === "function") {
+          //     const next = nextQuestion(answer.value);
+          //     socket.emit("message_received", {id: next, ...QUESTIONS[next]});
+          // } else {
+          //     socket.emit("message_received", {id: nextQuestion, ...QUESTIONS[nextQuestion]});
+          // }
+          let next = requested_question.prompt.next;
+          if(requested_question.prompt.dynamic) {
+              next = requested_question.prompt.next(answer.value);
+          }
+          setTimeout(() => {
+            socket.emit("message_received", {id: next, ...requested_question});
+          }, 1000);
+        }
+    })
+
     socket.on(CHATBOT_RECEIVED_EVENTS.CONVERSATION_CONTACT_EMAIL, () => {
         socket.emit(CHATBOT_EMITTED_EVENTS.CONTACT_EMAIL, email);
       })

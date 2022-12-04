@@ -26,7 +26,7 @@ exports.QUESTIONS = {
         "label": "What do you need?",
         "prompt":{
             "type": "Controlled",
-            answers: [
+            "answers": [
                 {
                     "label": "Maintenance",
                     "next": "maintenance-1"
@@ -91,6 +91,7 @@ exports.QUESTIONS = {
         "label": "How many kilometers did you drive since your last service?",
         "prompt":{
             "type": "Int",
+            "dynamic": true,
             "next": answer => checkKilometers(answer, "maintenance-4", "maintenance-6")
         }
     },

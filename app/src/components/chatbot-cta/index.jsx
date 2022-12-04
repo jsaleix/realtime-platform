@@ -9,7 +9,7 @@ import { useCallback } from "react";
 const ChatBot = lazy(() => import("../chatbot"));
 
 export default function ChatBotCta(){
-    const [ isOpen, setIsOpen ] = useState(false);
+    const [ isOpen, setIsOpen ] = useState(true);
     const { socket } = useSocketContext();
 
     useEffect(() => {
@@ -36,11 +36,11 @@ export default function ChatBotCta(){
             {isOpen 
             ? 
             (<div className={style.chatbot_container}>
-                <ChatBot/>
+                <ChatBot close={() => setIsOpen(false)}/>
             </div>)
             :
                 (<div className={style.chatbot_cta}>
-                        <div className={style.icon_container} onClick={startChat}>
+                        <div className={style.icon_container} onClick={() => setIsOpen(true)}>
                             <img src={BotIcon} alt="bot-icon" />
                         </div>
                         <div className={style.bot_taking}>
