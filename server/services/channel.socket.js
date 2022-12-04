@@ -1,19 +1,11 @@
 const { UniqueConstraintError, fn, col, Op } = require('sequelize');
 const {verifyToken} = require("../lib/jwt");
 const { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS, GLOBAL_EVENTS, CHATBOT_RECEIVED_EVENTS, CHATBOT_EMITTED_EVENTS } = require("../constants/ws-events");
-const { Appointment, Room, Message, User } = require("../models");
+const { Room, Message, User } = require("../models");
 const { APPOINTMENT_TYPE } = require('../constants/enums');
 
 const clients = {};
 let rooms = [];
-const email = "contact@chatbot.com";
-const phoneNumber = "0000000000";
-const  workingHours = {
-    start: 9,
-    end: 18,
-};
-const maxAppointmentTimeByDay = ((workingHours.end - workingHours.start)*60);
-const maxAppointmentTimeByWeek = (maxAppointmentTimeByDay * 5);
 
 const formatRooms = rooms => {
     return rooms.map((room) => {
@@ -86,7 +78,7 @@ const initRooms = async() => {
   return;
 }
 
-exports.websocketManager = (io, socket) => {
+exports.channelHandler = (io, socket) => {
   console.log("New client connected");
   const token = socket.handshake.auth.token;
   if (!token) socket.disconnect();
@@ -194,7 +186,7 @@ exports.websocketManager = (io, socket) => {
         return;
     }
     try{
-        const roomSocketId =  sluggifyRoomName(displayName);
+        const roomSocketId = sluggifyRoomName(displayName);
         const room = await Room.create({displayName, maxParticipants, socketId: roomSocketId});
         rooms.push({
             id: room.id,
@@ -213,56 +205,6 @@ exports.websocketManager = (io, socket) => {
     }
   });
 
-  socket.on(CHATBOT_RECEIVED_EVENTS.CONVERSATION_CONTACT_EMAIL, () => {
-    socket.emit(CHATBOT_EMITTED_EVENTS.CONTACT_EMAIL, email);
-  })
-
-  socket.on(CHATBOT_RECEIVED_EVENTS.CONVERSATION_CONTACT_PHONE, () => {
-    socket.emit(CHATBOT_EMITTED_EVENTS.CONTACT_PHONE, phoneNumber);
-  })
-
-  socket.on(CHATBOT_RECEIVED_EVENTS.APPOINTMENT_DISPONIBILITY, async() => {
-    let curr = new Date;
-    let dayLeftTime = maxAppointmentTimeByDay;
-    let weekLeftTime = maxAppointmentTimeByWeek;
-    let availableDays = {};
-    curr.setHours(0, 0, 0, 0);
-    curr.setDate(curr.getDate() - 1);
-    console.log("INIT WEEK", weekLeftTime);
-    for(let i = 0; i < 7; i++){
-      let date = new Date(curr.setDate(curr.getDate() + 1));
-      if(date.getDay() === 0 || date.getDay() === 6){
-        continue;
-      }
-      let appointments = await Appointment.findAll({
-        where: {
-          date: {
-            [Op.gte]: new Date(date.setHours(workingHours.start, 0, 0, 0)),
-            [Op.lt]: new Date(date.setHours(workingHours.end, 0, 0, 0)),
-          }
-        },
-      });
-      appointments.map(appointment => {
-        dayLeftTime -= appointment.duration;
-      });
-      if(dayLeftTime > 0){
-        availableDays[date.toDateString()] = appointments;
-      } else {
-        delete availableDays[date.toDateString()];
-      }
-      console.log(new Date(date).toISOString(), dayLeftTime);
-      if(weekLeftTime > 0 && dayLeftTime < maxAppointmentTimeByDay){
-        weekLeftTime -= (maxAppointmentTimeByDay - dayLeftTime);
-      } 
-      dayLeftTime = maxAppointmentTimeByDay;
-    }
-    if(weekLeftTime > 0){
-      //SEND THE WEEK
-      return;
-    }
-    //SEND NO PLACE IN THIS WEEK
-    console.log("FINAL WEEK", weekLeftTime);
-  })
 };
 
 initRooms();

@@ -22,7 +22,7 @@ export const SocketContextProvider = ({children}) => {
     const { appState: { auth:{ token } }, dispatch } = useAppContext();
     const socket = useMemo(() => io(SOCKET_URL, {
                                 autoConnect: false,
-                                path: "/ws",
+                                path: "/channel",
                                 auth: { token },
                                 }, [token]) )
 
