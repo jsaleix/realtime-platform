@@ -10,7 +10,8 @@ exports.CONVERSATION_STATUS = {
 }
 
 exports.APPOINTMENT_TYPE = {
-    "ESSAY": 30,
     "MAINTENANCE": 120,
-    "REVISION": 60
+    "ESSAY-CITY": 60,
+    "ESSAY-OFFROAD": 60,
+    "ESSAY-SPORT": 60,
 }

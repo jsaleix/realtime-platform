@@ -1,5 +1,5 @@
 const { UniqueConstraintError, fn, col, Op } = require('sequelize');
-const { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS, GLOBAL_EVENTS, CHATBOT_RECEIVED_EVENTS, CHATBOT_EMITTED_EVENTS } = require("../constants/ws-events");
+const { CHATBOT_RECEIVED_EVENTS, CHATBOT_EMITTED_EVENTS } = require("../constants/ws-events");
 const { Appointment } = require("../models");
 const { QUESTIONS } = require("./utils/questions");
 const email = "contact@chatbot.com";

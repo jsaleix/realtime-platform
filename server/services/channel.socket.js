@@ -1,8 +1,7 @@
 const { UniqueConstraintError, fn, col, Op } = require('sequelize');
 const {verifyToken} = require("../lib/jwt");
-const { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS, GLOBAL_EVENTS, CHATBOT_RECEIVED_EVENTS, CHATBOT_EMITTED_EVENTS } = require("../constants/ws-events");
+const { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS, GLOBAL_EVENTS } = require("../constants/ws-events");
 const { Room, Message, User } = require("../models");
-const { APPOINTMENT_TYPE } = require('../constants/enums');
 
 const clients = {};
 let rooms = [];

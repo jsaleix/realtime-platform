@@ -1,15 +1,18 @@
-checkLastService = (serviceDate, questionA, questionB) => {
-    const today = new Date();
-    const service = new Date(serviceDate);
-    const diffTime = Math.abs(today - service);
-    const diffYear = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffYear > 30) {
+const { APPOINTMENT_TYPE } = require('../../constants/enums');
+const email = "contact@chatbot.com";
+const phoneNumber = "0000000000";
+
+checkLastService = (serviceDateString, questionA, questionB) => {
+    const minDate = new Date();
+    minDate.setFullYear(minDate.getFullYear() - 1);
+    const serviceDate = new Date(serviceDateString);
+    if(serviceDate < minDate){
         return questionA;
     }
     return questionB;
 };
 
-checkLastService = (kilometers, questionA, questionB) => {
+checkKilometers = (kilometers, questionA, questionB) => {
     if(kilometers >= 10000){
         return questionA;
     }else{
@@ -17,8 +20,26 @@ checkLastService = (kilometers, questionA, questionB) => {
     }
 }
 
-askRdvDate = (serviceDate) => {
-    return [ {label: "test", next: "maintenance-date-saved"} ];
+askRdvDate = (serviceType) => {
+    let serviceTime = 0;
+    if( !Object.keys(APPOINTMENT_TYPE).includes(serviceType)){
+        return [
+            {
+            "label": "The service type doesn't exists",
+            "next": "origin",
+            }
+        ]
+    }
+    serviceTime = APPOINTMENT_TYPE[serviceType];
+    return [ 
+        {
+
+        },
+        {
+            "label": "Appointment Date", 
+            "next": "appointment-saved"
+        } 
+    ];
 }
 
 exports.QUESTIONS = {
@@ -29,15 +50,15 @@ exports.QUESTIONS = {
             "answers": [
                 {
                     "label": "Maintenance",
-                    "next": "maintenance-1"
+                    "next": "maintenance"
                 },
                 {
                     "label": "Vehicle information",
-                    "next": "vehicle-info-1"
+                    "next": "vehicle-info"
                 },
                 {
                     "label": "Contact information",
-                    "next": "contact-info-1"
+                    "next": "contact-info"
                 },
                 {
                     "label": "End",
@@ -47,63 +68,54 @@ exports.QUESTIONS = {
         }
     },
 
-    "maintenance-1": {
+    "maintenance": {
         "label": "When did you get your vehicle?",
         "prompt":{
             "type": "Int",
-            "next": "maintenance-2"
+            "next": "maintenance-ask-last-service"
         }
     },
 
-    "maintenance-2": {
-        "label": "What is the last time you got your vehicle serviced?",
-        "prompt":{
-            "type": "Int",
-            "next": "maintenance-3"
-        }
-    },
-
-    "maintenance-3": {
+    "maintenance-ask-last-service": {
         "label": "What is the last time you got your vehicle serviced?",
         "prompt": {
             "type": "Int",
             "dynamic": true,
-            "next": answer => checkLastService(answer, "maintenance-4", "maintenance-5")
+            "next": answer => checkLastService(answer, "maintenance-check-appointment", "maintenance-ask-kilometers")
         }
     },
 
-    "maintenance-4": {
-        "label": "Ask rdv date",
+    "maintenance-check-appointment": {
+        "label": "You should get your vehicle serviced",
         "prompt": {
             "type": "Controlled",
             "answers": [
-                ...askRdvDate()
+                ...askRdvDate(APPOINTMENT_TYPE.MAINTENANCE),
+                {
+                    "label": "End",
+                    "next": "end"
+                }
             ]
         }
     },
 
-    "maintenance-date-saved": {
-        "label": "Date successfully saved",
-        "next": "origin"
-    },
-
-    "maintenance-5": {
+    "maintenance-ask-kilometers": {
         "label": "How many kilometers did you drive since your last service?",
         "prompt":{
             "type": "Int",
             "dynamic": true,
-            "next": answer => checkKilometers(answer, "maintenance-4", "maintenance-6")
+            "next": answer => checkKilometers(answer, "maintenance-check-appointment", "maintenance-ask-appointment")
         }
     },
 
-    "maintenance-6": {
+    "maintenance-ask-appointment": {
         "label": "Do you want to schedule an appointment?",
         "prompt":{
             "type": "Controlled",
             "answers": [
                 {
                     "label": "Yes",
-                    "next": "maintenance-4"
+                    "next": "maintenance-check-appointment"
                 },
                 {
                     "label": "No",
@@ -111,5 +123,105 @@ exports.QUESTIONS = {
                 }
             ]
         }
+    },
+
+    "vehicle-info": {
+        "label": "For what use of your vehicle do you need information ?",
+        "prompt":{
+            "type": "Controlled",
+            "answers": [
+                {
+                    "label": "City",
+                    "next": "vehicle-info-city",
+                },
+                {
+                    "label": "Off-road",
+                    "next": "vehicle-info-offroad",
+                },
+                {
+                    "label": "Sport",
+                    "next": "vehicle-info-sport",
+                },
+            ]
+        }
+    },
+
+    "vehicle-info-city": {
+        "label": "We can schedule you a meeting",
+        "prompt": {
+            "type": "Controlled",
+            "answers": [
+                ...askRdvDate(APPOINTMENT_TYPE['ESSAY-CITY']),
+                {
+                    "label": "End",
+                    "next": "end"
+                }
+            ]
+        }
+    },
+
+    "vehicle-info-offroad": {
+        "label": "We can schedule you a meeting",
+        "prompt": {
+            "type": "Controlled",
+            "answers": [
+                ...askRdvDate(APPOINTMENT_TYPE['ESSAY-OFFROAD']),
+                {
+                    "label": "End",
+                    "next": "end"
+                }
+            ]
+        }
+    },
+
+    "vehicle-info-sport": {
+        "label": "We can schedule you a meeting",
+        "prompt": {
+            "type": "Controlled",
+            "answers": [
+                ...askRdvDate(APPOINTMENT_TYPE['ESSAY-SPORT']),
+                {
+                    "label": "End",
+                    "next": "end"
+                }
+            ]
+        }
+    },
+
+    "contact-info": {
+        "label": "What info do you need ?",
+        "prompt":{
+            "type": "Controlled",
+            "answers": [
+                {
+                    "label": "Phone number",
+                    "next": "contact-info-phone"
+                },
+                {
+                    "label": "Email",
+                    "next": "contact-info-email"
+                },
+            ]
+        }
+    },
+
+    "contact-info-phone": {
+        "label": "Here is your phone number : " + phoneNumber,
+        "next": "origin"
+    },
+
+    "contact-info-email": {
+        "label": "Here is your email : " + email,
+        "next": "origin"
+    },
+
+    "appointment-saved": {
+        "label": "Appointment successfully saved",
+        "next": "origin"
+    },
+
+    "end": {
+        "label": "Bye bye",
+        "next": "none"
     }
 }
