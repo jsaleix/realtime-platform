@@ -20,7 +20,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                             value={dateValue}
                             onChange={e => setDateValue(e.target.value)}
                         />
-                        <button onClick={() => answerAction({ next: message.prompt.next, value: dateValue})}>Send</button>
+                        <button onClick={() => answerAction({ value: dateValue})}>Send</button>
                     </div>
                 )
             case "string":
@@ -32,7 +32,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                             value={stringValue}
                             onChange={e => setStringValue(e.target.value)}
                         />
-                        <button onClick={() => answerAction({ next: message.prompt.next, value: stringValue})}>Send</button>
+                        <button onClick={() => answerAction({ value: stringValue})}>Send</button>
                     </div>
                 )
             case "int":
@@ -44,7 +44,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                             value={intValue}
                             onChange={e => setIntValue(parseInt(e.target.value))}
                          />
-                        <button onClick={() => answerAction({ next: message.prompt.next, value: intValue})}>Send</button>
+                        <button onClick={() => answerAction({ value: intValue})}>Send</button>
                     </div>
                 )
 
@@ -54,7 +54,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                         {message.prompt.answers.map(({label, next}, index) => 
                             <div key={index}
                                 className={style.action} 
-                                onClick={() => answerAction({next})}
+                                onClick={() => answerAction({value: index})}
                             >
                                 <p>{label}</p>
                             </div>)

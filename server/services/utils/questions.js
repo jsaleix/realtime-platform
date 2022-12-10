@@ -79,7 +79,7 @@ exports.QUESTIONS = {
     "maintenance-ask-last-service": {
         "label": "What is the last time you got your vehicle serviced?",
         "prompt": {
-            "type": "Int",
+            "type": "date",
             "dynamic": true,
             "next": answer => checkLastService(answer, "maintenance-check-appointment", "maintenance-ask-kilometers")
         }
@@ -222,6 +222,6 @@ exports.QUESTIONS = {
 
     "end": {
         "label": "Bye bye",
-        "next": "none"
+        "next": "origin"
     }
 }
