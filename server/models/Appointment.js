@@ -20,6 +20,11 @@ Appointment.init(
             type: DataTypes.INTEGER,
             allowNull: false,
         },
+        notes: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+            defaultValue: null,
+        },
     }, 
     {
         sequelize: connection,

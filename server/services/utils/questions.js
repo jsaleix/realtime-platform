@@ -20,17 +20,80 @@ checkKilometers = (kilometers, questionA, questionB) => {
     }
 }
 
-askRdvDate = (serviceType) => {
+getAvalaibleDays = (appointmentType) => {
     let serviceTime = 0;
-    if( !Object.keys(APPOINTMENT_TYPE).includes(serviceType)){
+    console.log(appointmentType, APPOINTMENT_TYPE);
+    if( !Object.keys(APPOINTMENT_TYPE).includes(appointmentType)){
         return [
             {
-            "label": "The service type doesn't exists",
-            "next": "origin",
+                "label": "The service type doesn't exists",
+                "next": "origin",
             }
         ]
     }
-    serviceTime = APPOINTMENT_TYPE[serviceType];
+    serviceTime = APPOINTMENT_TYPE[appointmentType];
+    // if(!data || data.length === 0){
+    //     return [
+    //         {
+    //             "label": "No appointment available",
+    //             "next": "origin",
+    //         },
+    //         {
+    //             "label": "End",
+    //             "next": "end"
+    //         }
+    //     ]
+    // }
+
+    return [ 
+        {
+            "label": "2022-12-12 00:00:00",
+            "value": "2022-12-12 00:00:00",
+        },
+        {
+            "label": "2022-12-13 00:00:00",
+            "value": "2022-12-13 00:00:00",
+        },
+        {
+            "label": "2022-12-14 00:00:00",
+            "value": "2022-12-14 00:00:00",
+        },
+        {
+            "label": "Appointment Date", 
+            "next": "appointment-saved"
+        } 
+    ];
+}
+
+getAvalaibleHours = (appointmentType, day) => {
+
+}
+
+askRdvDate = (appointmentType) => {
+    let serviceTime = 0;
+    console.log(appointmentType, APPOINTMENT_TYPE);
+    if( !Object.keys(APPOINTMENT_TYPE).includes(appointmentType)){
+        return [
+            {
+                "label": "The service type doesn't exists",
+                "next": "origin",
+            }
+        ]
+    }
+    serviceTime = APPOINTMENT_TYPE[appointmentType];
+    // if(!data || data.length === 0){
+    //     return [
+    //         {
+    //             "label": "No appointment available",
+    //             "next": "origin",
+    //         },
+    //         {
+    //             "label": "End",
+    //             "next": "end"
+    //         }
+    //     ]
+    // }
+
     return [ 
         {
 
@@ -89,13 +152,15 @@ exports.QUESTIONS = {
         "label": "You should get your vehicle serviced",
         "prompt": {
             "type": "Controlled",
+            "dynamic": true,
             "answers": [
-                ...askRdvDate(APPOINTMENT_TYPE.MAINTENANCE),
-                {
-                    "label": "End",
-                    "next": "end"
-                }
-            ]
+                ...getAvalaibleDays('MAINTENANCE')
+            ],
+            "next": (answer, notes) => {
+                notes.appointmentType = 'MAINTENANCE';
+                notes.appointmentDay = answer;
+                return 'appointment-saved';
+            }
         }
     },
 
@@ -150,13 +215,15 @@ exports.QUESTIONS = {
         "label": "We can schedule you a meeting",
         "prompt": {
             "type": "Controlled",
+            "dynamic": true,
             "answers": [
-                ...askRdvDate(APPOINTMENT_TYPE['ESSAY-CITY']),
-                {
-                    "label": "End",
-                    "next": "end"
-                }
-            ]
+                ...getAvalaibleDays('ESSAY-CITY')
+            ],
+            "next": (answer, notes) => {
+                notes.appointmentType = 'ESSAY-CITY';
+                notes.appointmentDay = answer;
+                return 'appointment-saved';
+            }
         }
     },
 
@@ -164,13 +231,15 @@ exports.QUESTIONS = {
         "label": "We can schedule you a meeting",
         "prompt": {
             "type": "Controlled",
+            "dynamic": true,
             "answers": [
-                ...askRdvDate(APPOINTMENT_TYPE['ESSAY-OFFROAD']),
-                {
-                    "label": "End",
-                    "next": "end"
-                }
-            ]
+                ...getAvalaibleDays('ESSAY-OFFROAD')
+            ],
+            "next": (answer, notes) => {
+                notes.appointmentType = 'ESSAY-OFFROAD';
+                notes.appointmentDay = answer;
+                return 'appointment-saved';
+            }
         }
     },
 
@@ -178,13 +247,15 @@ exports.QUESTIONS = {
         "label": "We can schedule you a meeting",
         "prompt": {
             "type": "Controlled",
+            "dynamic": true,
             "answers": [
-                ...askRdvDate(APPOINTMENT_TYPE['ESSAY-SPORT']),
-                {
-                    "label": "End",
-                    "next": "end"
-                }
-            ]
+                ...getAvalaibleDays('ESSAY-SPORT')
+            ],
+            "next": (answer, notes) => {
+                notes.appointmentType = 'ESSAY-SPORT';
+                notes.appointmentDay = answer;
+                return 'appointment-saved';
+            }
         }
     },
 
@@ -213,6 +284,16 @@ exports.QUESTIONS = {
     "contact-info-email": {
         "label": "Here is your email : " + email,
         "next": "origin"
+    },
+
+    "appointment-hours": {
+        "label": "What time do you want to come ?",
+        "prompt":{
+            "type": "Controlled",
+            "answers": [
+                
+            ],
+        }
     },
 
     "appointment-saved": {
