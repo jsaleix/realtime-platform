@@ -13,6 +13,7 @@ checkLastService = (serviceDateString, questionA, questionB) => {
 };
 
 checkKilometers = (kilometers, questionA, questionB) => {
+    console.log(kilometers);
     if(kilometers >= 10000){
         return questionA;
     }else{
@@ -66,7 +67,25 @@ getAvalaibleDays = (appointmentType) => {
 }
 
 getAvalaibleHours = (appointmentType, day) => {
-
+    console.log(appointmentType, day);
+    return [ 
+        {
+            "label": "08:00:00",
+            "value": "08:00:00",
+        },
+        {
+            "label": "09:00:00",
+            "value": "09:00:00",
+        },
+        {
+            "label": "10:00:00",
+            "value": "10:00:00",
+        },
+        {
+            "label": "Appointment Date", 
+            "next": "appointment-saved"
+        } 
+    ];
 }
 
 askRdvDate = (appointmentType) => {
@@ -106,203 +125,245 @@ askRdvDate = (appointmentType) => {
 }
 
 exports.QUESTIONS = {
-    "origin": {
-        "label": "What do you need?",
-        "prompt":{
-            "type": "Controlled",
-            "answers": [
-                {
-                    "label": "Maintenance",
-                    "next": "maintenance"
-                },
-                {
-                    "label": "Vehicle information",
-                    "next": "vehicle-info"
-                },
-                {
-                    "label": "Contact information",
-                    "next": "contact-info"
-                },
-                {
-                    "label": "End",
-                    "next": "end"
+    "origin": () => {
+        return {
+            "label": "What do you need?",
+            "prompt":{
+                "type": "Controlled",
+                "answers": [
+                    {
+                        "label": "Maintenance",
+                        "next": "maintenance"
+                    },
+                    {
+                        "label": "Vehicle information",
+                        "next": "vehicle-info"
+                    },
+                    {
+                        "label": "Contact information",
+                        "next": "contact-info"
+                    },
+                    {
+                        "label": "End",
+                        "next": "end"
+                    }
+                ]
+            }
+        }
+    },
+
+    "maintenance": () => {
+        return {
+            "label": "In which year did you get your vehicle ?",
+            "prompt":{
+                "type": "Int",
+                "next": "maintenance-ask-last-service"
+            }
+        }
+    },
+
+    "maintenance-ask-last-service": ({value: answer}, notes) => {
+        const date = new Date(answer, 0, 1);
+        console.log(date);
+        notes.vehicleObtentionDate = date;
+        // date.setFullYear(minDate.getFullYear() - answer);
+        return {
+            "label": "What is the last time you got your vehicle serviced?",
+            "prompt": {
+                "type": "date",
+                "dynamic": true,
+                "next": (lastAnswer) => checkLastService(lastAnswer.value, "maintenance-check-appointment", "maintenance-ask-kilometers")
+            }
+        }
+    },
+
+    "maintenance-check-appointment": (answer, notes) => {
+        const days = getAvalaibleDays('MAINTENANCE');
+
+        return {
+            "label": "You should get your vehicle serviced",
+            "prompt": {
+                "type": "Controlled",
+                "answers": days,
+                "dynamic": true,
+                "next": (lastAnswer) => {
+                    notes.appointmentType = 'MAINTENANCE';
+                    notes.appointmentDay = days[lastAnswer.value].value;
+                    return 'appointment-hours'
                 }
-            ]
-        }
-    },
-
-    "maintenance": {
-        "label": "When did you get your vehicle?",
-        "prompt":{
-            "type": "Int",
-            "next": "maintenance-ask-last-service"
-        }
-    },
-
-    "maintenance-ask-last-service": {
-        "label": "What is the last time you got your vehicle serviced?",
-        "prompt": {
-            "type": "date",
-            "dynamic": true,
-            "next": answer => checkLastService(answer, "maintenance-check-appointment", "maintenance-ask-kilometers")
-        }
-    },
-
-    "maintenance-check-appointment": {
-        "label": "You should get your vehicle serviced",
-        "prompt": {
-            "type": "Controlled",
-            "dynamic": true,
-            "answers": [
-                ...getAvalaibleDays('MAINTENANCE')
-            ],
-            "next": (answer, notes) => {
-                notes.appointmentType = 'MAINTENANCE';
-                notes.appointmentDay = answer;
-                return 'appointment-saved';
             }
         }
     },
 
-    "maintenance-ask-kilometers": {
-        "label": "How many kilometers did you drive since your last service?",
-        "prompt":{
-            "type": "Int",
-            "dynamic": true,
-            "next": answer => checkKilometers(answer, "maintenance-check-appointment", "maintenance-ask-appointment")
+    "maintenance-ask-kilometers": (answer, notes) => {
+        return {
+            "label": "How many kilometers did you drive since your last service?",
+            "prompt":{
+                "type": "Int",
+                "dynamic": true,
+                "next": (lastAnswer) => checkKilometers(lastAnswer.value, "maintenance-check-appointment", "maintenance-ask-appointment")
+            }
         }
     },
 
-    "maintenance-ask-appointment": {
-        "label": "Do you want to schedule an appointment?",
-        "prompt":{
-            "type": "Controlled",
-            "answers": [
-                {
-                    "label": "Yes",
-                    "next": "maintenance-check-appointment"
-                },
-                {
-                    "label": "No",
-                    "next": "origin"
+    "maintenance-ask-appointment": (answer, notes) => {
+        return {
+            "label": "Do you want to schedule an appointment?",
+            "prompt":{
+                "type": "Controlled",
+                "answers": [
+                    {
+                        "label": "Yes",
+                        "next": "maintenance-check-appointment"
+                    },
+                    {
+                        "label": "No",
+                        "next": "origin"
+                    }
+                ]
+            }
+        }
+    },
+
+    "vehicle-info": (answer, notes) => {
+        return {
+            "label": "For what use of your vehicle do you need information ?",
+            "prompt":{
+                "type": "Controlled",
+                "answers": [
+                    {
+                        "label": "City",
+                        "next": "vehicle-info-city",
+                    },
+                    {
+                        "label": "Off-road",
+                        "next": "vehicle-info-offroad",
+                    },
+                    {
+                        "label": "Sport",
+                        "next": "vehicle-info-sport",
+                    },
+                ]
+            }
+        }
+    },
+
+    "vehicle-info-city": (answer, notes) => {
+        const days = getAvalaibleDays('ESSAY-CITY');
+        notes.appointmentType = 'ESSAY-CITY';
+        notes.appointmentDay = days[answer.value].value;
+
+        return {
+            "label": "We can schedule you a meeting",
+            "prompt": {
+                "type": "Controlled",
+                "answers": days,
+                "dynamic": true,
+                "next": (lastAnswer) => {
+                    notes.appointmentType = 'ESSAY-CITY';
+                    notes.appointmentDay = days[lastAnswer.value].value;
+                    return 'appointment-hours'
                 }
-            ]
-        }
-    },
-
-    "vehicle-info": {
-        "label": "For what use of your vehicle do you need information ?",
-        "prompt":{
-            "type": "Controlled",
-            "answers": [
-                {
-                    "label": "City",
-                    "next": "vehicle-info-city",
-                },
-                {
-                    "label": "Off-road",
-                    "next": "vehicle-info-offroad",
-                },
-                {
-                    "label": "Sport",
-                    "next": "vehicle-info-sport",
-                },
-            ]
-        }
-    },
-
-    "vehicle-info-city": {
-        "label": "We can schedule you a meeting",
-        "prompt": {
-            "type": "Controlled",
-            "dynamic": true,
-            "answers": [
-                ...getAvalaibleDays('ESSAY-CITY')
-            ],
-            "next": (answer, notes) => {
-                notes.appointmentType = 'ESSAY-CITY';
-                notes.appointmentDay = answer;
-                return 'appointment-saved';
             }
         }
     },
 
-    "vehicle-info-offroad": {
-        "label": "We can schedule you a meeting",
-        "prompt": {
-            "type": "Controlled",
-            "dynamic": true,
-            "answers": [
-                ...getAvalaibleDays('ESSAY-OFFROAD')
-            ],
-            "next": (answer, notes) => {
-                notes.appointmentType = 'ESSAY-OFFROAD';
-                notes.appointmentDay = answer;
-                return 'appointment-saved';
+    "vehicle-info-offroad": (answer, notes) => {
+        const days = getAvalaibleDays('ESSAY-OFFROAD');
+        notes.appointmentType = 'ESSAY-OFFROAD';
+        notes.appointmentDay = days[answer.value].value;
+
+        return {
+            "label": "We can schedule you a meeting",
+            "prompt": {
+                "type": "Controlled",
+                "answers": days,
+                "dynamic": true,
+                "next": (lastAnswer) => {
+                    notes.appointmentType = 'ESSAY-OFFROAD';
+                    notes.appointmentDay = days[lastAnswer.value].value;
+                    return 'appointment-hours'
+                }
             }
         }
     },
 
-    "vehicle-info-sport": {
-        "label": "We can schedule you a meeting",
-        "prompt": {
-            "type": "Controlled",
-            "dynamic": true,
-            "answers": [
-                ...getAvalaibleDays('ESSAY-SPORT')
-            ],
-            "next": (answer, notes) => {
-                notes.appointmentType = 'ESSAY-SPORT';
-                notes.appointmentDay = answer;
-                return 'appointment-saved';
+    "vehicle-info-sport": (answer, notes) => {
+        const days = getAvalaibleDays('ESSAY-SPORT');
+        notes.appointmentType = 'ESSAY-SPORT';
+        notes.appointmentDay = days[answer.value].value;
+
+        return {
+            "label": "We can schedule you a meeting",
+            "prompt": {
+                "type": "Controlled",
+                "answers": days,
+                "dynamic": true,
+                "next": (lastAnswer) => {
+                    notes.appointmentType = 'ESSAY-SPORT';
+                    notes.appointmentDay = days[lastAnswer.value].value;
+                    return 'appointment-hours'
+                }
             }
         }
     },
 
-    "contact-info": {
-        "label": "What info do you need ?",
-        "prompt":{
-            "type": "Controlled",
-            "answers": [
-                {
-                    "label": "Phone number",
-                    "next": "contact-info-phone"
-                },
-                {
-                    "label": "Email",
-                    "next": "contact-info-email"
-                },
-            ]
+    "contact-info": () => {
+        return {
+            "label": "What info do you need ?",
+            "prompt":{
+                "type": "Controlled",
+                "answers": [
+                    {
+                        "label": "Phone number",
+                        "next": "contact-info-phone"
+                    },
+                    {
+                        "label": "Email",
+                        "next": "contact-info-email"
+                    },
+                ]
+            }
         }
     },
 
-    "contact-info-phone": {
-        "label": "Here is your phone number : " + phoneNumber,
-        "next": "origin"
-    },
-
-    "contact-info-email": {
-        "label": "Here is your email : " + email,
-        "next": "origin"
-    },
-
-    "appointment-hours": {
-        "label": "What time do you want to come ?",
-        "prompt":{
-            "type": "Controlled",
-            "answers": [
-                
-            ],
+    "contact-info-phone": (answer, notes) => {
+        return {
+            "label": "Here is your phone number : " + phoneNumber,
+            "next": "origin"
         }
     },
 
-    "appointment-saved": {
-        "label": "Appointment successfully saved",
-        "next": "origin"
+    "contact-info-email": (answer, notes) => {
+        return {
+            "label": "Here is your email : " + email,
+            "next": "origin"
+        }
     },
 
-    "end": {
-        "label": "Bye bye",
-        "next": "origin"
+    "appointment-hours": (answer, notes) => {
+        const hours = getAvalaibleHours(notes.appointmentType, notes.appointmentDay);
+        return {
+            "label": "What time do you want to come ?",
+            "prompt":{
+                "type": "Controlled",
+                "answers": hours,
+                "next": "appointment-saved"
+            }
+        }
+    },
+
+    "appointment-saved": (answer, notes) => {
+        return {
+            "label": "Appointment successfully saved",
+            "next": "origin"
+        }
+    },
+
+    "end": (answer, notes) => {
+        return {
+            "label": "Bye bye",
+            "next": "origin"
+        }
     }
 }

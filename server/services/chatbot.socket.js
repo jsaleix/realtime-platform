@@ -14,15 +14,14 @@ const clientsQuestion = [];
 
 exports.chatbotHandler = (io, socket) => {
     let notes = {};
-    socket.emit("message_received", {id: "origin", ...QUESTIONS["origin"]});
+    socket.emit("message_received", {id: "origin", ...QUESTIONS["origin"]()});
     //Setting the current question for each client
     clientsQuestion[socket.id] = "origin";
   
     socket.on("answer", answer => {
-      console.log(answer)
-      const currentQuestion = QUESTIONS[clientsQuestion[socket.id]];
+      const currentQuestion = QUESTIONS[clientsQuestion[socket.id]](answer, notes);
       if(!currentQuestion){
-        socket.emit("message_received", {id: "origin", ...QUESTIONS["origin"]});
+        socket.emit("message_received", {id: "origin", ...QUESTIONS["origin"]()});
         clientsQuestion[socket.id] = "origin";
         return;
       }
@@ -32,29 +31,30 @@ exports.chatbotHandler = (io, socket) => {
         if(currentQuestion?.next){
           next = currentQuestion.next;
         }
-        //If the current question doesn't have neither a prompt or a next, we go back to the origin
+        //If the current question doesn't have neither a prompt or a next,  we go back to the origin
       }else{
         if(currentQuestion.prompt.type === "Controlled"){
-          console.log(currentQuestion.prompt.answers[answer.value]);
-          if (currentQuestion.prompt.dynamic && currentQuestion.prompt.next) {
-            next = currentQuestion.prompt.next(currentQuestion.prompt.answers[answer.value].value, notes);
-          }else{
+          if(currentQuestion.prompt.next){
+            if(currentQuestion.prompt.dynamic){
+              next = currentQuestion.prompt.next(answer);
+            }else {
+              next = currentQuestion.prompt.next;
+            }
+          }else if(currentQuestion.prompt.answers[answer.value].next){
             next = currentQuestion.prompt.answers[answer.value].next;
           }
         }else{
-          if (currentQuestion.prompt.dynamic) {
-            next = currentQuestion.prompt.next(answer.value);
+          if(currentQuestion.prompt.dynamic){
+            next = currentQuestion.prompt.next(answer);
           }else{
             next = currentQuestion.prompt.next;
           }
         }
       }
-      console.log("notes is", notes);
-      console.log("next is", next)
       // saving the current question for the client
       clientsQuestion[socket.id] = next;
       setTimeout(() => {
-        socket.emit("message_received", {id: next, ...QUESTIONS[next]});
+        socket.emit("message_received", {id: next, ...QUESTIONS[next](answer, notes)});
       }, 1000);
     })
 
