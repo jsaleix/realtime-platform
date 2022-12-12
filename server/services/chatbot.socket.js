@@ -1,32 +1,24 @@
 const { UniqueConstraintError, fn, col, Op } = require('sequelize');
 const { CHATBOT_RECEIVED_EVENTS, CHATBOT_EMITTED_EVENTS } = require("../constants/ws-events");
-const { Appointment } = require("../models");
 const { QUESTIONS } = require("./utils/questions");
-const email = "contact@chatbot.com";
-const phoneNumber = "0000000000";
-const  workingHours = {
-    start: 9,
-    end: 18,
-};
-const maxAppointmentTimeByDay = ((workingHours.end - workingHours.start)*60);
-const maxAppointmentTimeByWeek = (maxAppointmentTimeByDay * 5);
+
 const clientsQuestion = [];
 
-exports.chatbotHandler = (io, socket) => {
+exports.chatbotHandler = async (io, socket) => {
     let notes = {};
-    socket.emit("message_received", {id: "origin", ...QUESTIONS["origin"]()});
+    socket.emit("message_received", {id: "origin", ...(await QUESTIONS["origin"]())});
     //Setting the current question for each client
     clientsQuestion[socket.id] = "origin";
   
-    socket.on("answer", answer => {
-      const currentQuestion = QUESTIONS[clientsQuestion[socket.id]](answer, notes);
+    socket.on("answer", async answer => {
+      const currentQuestion = await QUESTIONS[clientsQuestion[socket.id]](answer, notes);
       if(!currentQuestion){
-        socket.emit("message_received", {id: "origin", ...QUESTIONS["origin"]()});
+        socket.emit("message_received", {id: "origin", ...(await QUESTIONS["origin"]())});
         clientsQuestion[socket.id] = "origin";
         return;
       }
 
-      var next = "origin";
+      let next = "origin";
       if(!currentQuestion?.prompt){
         if(currentQuestion?.next){
           next = currentQuestion.next;
@@ -35,77 +27,18 @@ exports.chatbotHandler = (io, socket) => {
       }else{
         if(currentQuestion.prompt.type === "Controlled"){
           if(currentQuestion.prompt.next){
-            if(currentQuestion.prompt.dynamic){
-              next = currentQuestion.prompt.next(answer);
-            }else {
               next = currentQuestion.prompt.next;
-            }
           }else if(currentQuestion.prompt.answers[answer.value].next){
             next = currentQuestion.prompt.answers[answer.value].next;
           }
         }else{
-          if(currentQuestion.prompt.dynamic){
-            next = currentQuestion.prompt.next(answer);
-          }else{
             next = currentQuestion.prompt.next;
-          }
         }
       }
       // saving the current question for the client
       clientsQuestion[socket.id] = next;
-      setTimeout(() => {
-        socket.emit("message_received", {id: next, ...QUESTIONS[next](answer, notes)});
-      }, 1000);
+      setTimeout(async () => {
+        socket.emit("message_received", {id: next, ...(await QUESTIONS[next](answer, notes))});
+      }, 0);
     })
-
-    // socket.on(CHATBOT_RECEIVED_EVENTS.CONVERSATION_CONTACT_EMAIL, () => {
-    //     socket.emit(CHATBOT_EMITTED_EVENTS.CONTACT_EMAIL, email);
-    //   })
-    
-    //   socket.on(CHATBOT_RECEIVED_EVENTS.CONVERSATION_CONTACT_PHONE, () => {
-    //     socket.emit(CHATBOT_EMITTED_EVENTS.CONTACT_PHONE, phoneNumber);
-    //   })
-    
-      // socket.on(CHATBOT_RECEIVED_EVENTS.APPOINTMENT_DISPONIBILITY, async() => {
-      //   let curr = new Date;
-      //   let dayLeftTime = maxAppointmentTimeByDay;
-      //   let weekLeftTime = maxAppointmentTimeByWeek;
-      //   let availableDays = {};
-      //   curr.setHours(0, 0, 0, 0);
-      //   curr.setDate(curr.getDate() - 1);
-      //   console.log("INIT WEEK", weekLeftTime);
-      //   for(let i = 0; i < 7; i++){
-      //     let date = new Date(curr.setDate(curr.getDate() + 1));
-      //     if(date.getDay() === 0 || date.getDay() === 6){
-      //       continue;
-      //     }
-      //     let appointments = await Appointment.findAll({
-      //       where: {
-      //         date: {
-      //           [Op.gte]: new Date(date.setHours(workingHours.start, 0, 0, 0)),
-      //           [Op.lt]: new Date(date.setHours(workingHours.end, 0, 0, 0)),
-      //         }
-      //       },
-      //     });
-      //     appointments.map(appointment => {
-      //       dayLeftTime -= appointment.duration;
-      //     });
-      //     if(dayLeftTime > 0){
-      //       availableDays[date.toDateString()] = appointments;
-      //     } else {
-      //       delete availableDays[date.toDateString()];
-      //     }
-      //     console.log(new Date(date).toISOString(), dayLeftTime);
-      //     if(weekLeftTime > 0 && dayLeftTime < maxAppointmentTimeByDay){
-      //       weekLeftTime -= (maxAppointmentTimeByDay - dayLeftTime);
-      //     } 
-      //     dayLeftTime = maxAppointmentTimeByDay;
-      //   }
-      //   if(weekLeftTime > 0){
-      //     //SEND THE WEEK
-      //     return;
-      //   }
-      //   //SEND NO PLACE IN THIS WEEK
-      //   console.log(availableDays, weekLeftTime);
-      // })
 };

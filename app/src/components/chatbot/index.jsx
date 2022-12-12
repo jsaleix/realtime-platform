@@ -19,6 +19,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                             type="date"
                             value={dateValue}
                             onChange={e => setDateValue(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && answerAction({ value: dateValue})}
                         />
                         <button onClick={() => answerAction({ value: dateValue})}>Send</button>
                     </div>
@@ -31,6 +32,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                             type="text"
                             value={stringValue}
                             onChange={e => setStringValue(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && answerAction({ value: stringValue})}
                         />
                         <button onClick={() => answerAction({ value: stringValue})}>Send</button>
                     </div>
@@ -43,6 +45,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                             type="number"
                             value={intValue}
                             onChange={e => setIntValue(parseInt(e.target.value))}
+                            onKeyDown={e => e.key === "Enter" && answerAction({ value: intValue})}
                          />
                         <button onClick={() => answerAction({ value: intValue})}>Send</button>
                     </div>

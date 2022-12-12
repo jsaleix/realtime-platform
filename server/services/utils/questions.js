@@ -1,8 +1,16 @@
+const { UniqueConstraintError, fn, col, Op } = require('sequelize');
+const { Appointment } = require('../../models');
 const { APPOINTMENT_TYPE } = require('../../constants/enums');
 const email = "contact@chatbot.com";
 const phoneNumber = "0000000000";
+const  workingHours = {
+    start: 9,
+    end: 18,
+};
+const maxAppointmentTimeByDay = ((workingHours.end - workingHours.start)*60);
+const maxAppointmentTimeByWeek = (maxAppointmentTimeByDay * 5);
 
-checkLastService = (serviceDateString, questionA, questionB) => {
+const checkLastService = (serviceDateString, questionA, questionB) => {
     const minDate = new Date();
     minDate.setFullYear(minDate.getFullYear() - 1);
     const serviceDate = new Date(serviceDateString);
@@ -12,8 +20,7 @@ checkLastService = (serviceDateString, questionA, questionB) => {
     return questionB;
 };
 
-checkKilometers = (kilometers, questionA, questionB) => {
-    console.log(kilometers);
+const checkKilometers = (kilometers, questionA, questionB) => {
     if(kilometers >= 10000){
         return questionA;
     }else{
@@ -21,9 +28,7 @@ checkKilometers = (kilometers, questionA, questionB) => {
     }
 }
 
-getAvalaibleDays = (appointmentType) => {
-    let serviceTime = 0;
-    console.log(appointmentType, APPOINTMENT_TYPE);
+const getAvailableDays = async (appointmentType) => {
     if( !Object.keys(APPOINTMENT_TYPE).includes(appointmentType)){
         return [
             {
@@ -33,95 +38,134 @@ getAvalaibleDays = (appointmentType) => {
         ]
     }
     serviceTime = APPOINTMENT_TYPE[appointmentType];
-    // if(!data || data.length === 0){
-    //     return [
-    //         {
-    //             "label": "No appointment available",
-    //             "next": "origin",
-    //         },
-    //         {
-    //             "label": "End",
-    //             "next": "end"
-    //         }
-    //     ]
-    // }
-
-    return [ 
-        {
-            "label": "2022-12-12 00:00:00",
-            "value": "2022-12-12 00:00:00",
-        },
-        {
-            "label": "2022-12-13 00:00:00",
-            "value": "2022-12-13 00:00:00",
-        },
-        {
-            "label": "2022-12-14 00:00:00",
-            "value": "2022-12-14 00:00:00",
-        },
-        {
-            "label": "Appointment Date", 
-            "next": "appointment-saved"
-        } 
-    ];
+    let data = await getApppointmentDaysDisponibility(appointmentType).then((days) => {
+        return Object.entries(days).map(([key, value]) => {
+            return {
+                "label": key,
+            }
+        });
+    });
+    return data;
+    // return [ 
+    //     {
+    //         "label": "2022-12-12 00:00:00",
+    //     },
+    //     {
+    //         "label": "2022-12-13 00:00:00",
+    //     },
+    //     {
+    //         "label": "2022-12-14 00:00:00",
+    //     }
+    // ];
 }
 
-getAvalaibleHours = (appointmentType, day) => {
-    console.log(appointmentType, day);
+const getAvailableHours = (appointmentType, day) => {
     return [ 
         {
             "label": "08:00:00",
-            "value": "08:00:00",
         },
         {
             "label": "09:00:00",
-            "value": "09:00:00",
         },
         {
             "label": "10:00:00",
-            "value": "10:00:00",
-        },
-        {
-            "label": "Appointment Date", 
-            "next": "appointment-saved"
-        } 
+        }
     ];
 }
 
-askRdvDate = (appointmentType) => {
-    let serviceTime = 0;
-    console.log(appointmentType, APPOINTMENT_TYPE);
-    if( !Object.keys(APPOINTMENT_TYPE).includes(appointmentType)){
-        return [
-            {
-                "label": "The service type doesn't exists",
-                "next": "origin",
-            }
-        ]
+const getApppointmentDaysDisponibility = async (appointmentType) => {
+    if(!appointmentType || Object.keys(APPOINTMENT_TYPE).indexOf(appointmentType) === -1){
+        return;
     }
-    serviceTime = APPOINTMENT_TYPE[appointmentType];
-    // if(!data || data.length === 0){
-    //     return [
-    //         {
-    //             "label": "No appointment available",
-    //             "next": "origin",
-    //         },
-    //         {
-    //             "label": "End",
-    //             "next": "end"
-    //         }
-    //     ]
-    // }
+    const options = {
+        where: {},
+        raw: true,
+    };
+    if(appointmentType === Object.keys(APPOINTMENT_TYPE)[0]){
+        options.where.type = Object.keys(APPOINTMENT_TYPE)[0]
+    }else{
+        options.where.type = {
+            [Op.ne]: Object.keys(APPOINTMENT_TYPE)[0]
+        }
+    }
+    let curr = new Date;
+    let dayLeftTime;
+    let availableDays = {};
+    curr.setHours(0, 0, 0, 0);
+    curr.setDate(curr.getDate() - 1);
+    iteration = 0;
+    while(iteration < 5){
+        for(let i = 0; i < 7; i++){
+            let date = new Date(curr.setDate(curr.getDate() + 1));
+            if(date.getDay() === 0 || date.getDay() === 6){
+                continue;
+            }
+            options.where.date = {
+                [Op.gte]: new Date(date.setHours(workingHours.start, 0, 0, 0)),
+                [Op.lt]: new Date(date.setHours(workingHours.end, 0, 0, 0)),
+            }
+            let appointments = await Appointment.findAll(options);
+            dayLeftTime = appointments.reduce((acc, appointment) => acc -= appointment.duration, maxAppointmentTimeByDay);
+    
+            if(dayLeftTime > APPOINTMENT_TYPE[appointmentType]){
+                availableDays[date.toDateString()] = appointments;
+            } else {
+                delete availableDays[date.toDateString()];
+            }
+            dayLeftTime = maxAppointmentTimeByDay;
+        }
+        if(availableDays && Object.keys(availableDays).length > 0 && Object.keys(availableDays)[0].length > 0){
+            return availableDays;
+        }
+        iteration ++;
+    };
+}
 
-    return [ 
-        {
-
+const getAppointmentHoursForDay = async (appointmentType, {label: day}) => {
+    let date = new Date(day);
+    if(!appointmentType || Object.keys(APPOINTMENT_TYPE).indexOf(appointmentType) === -1){
+        return;
+    }
+    const options = {
+        where: {
+            date: {
+                [Op.gte]: new Date(date.setHours(workingHours.start, 0, 0, 0)),
+                [Op.lt]: new Date(date.setHours(workingHours.end, 0, 0, 0)),
+            }
         },
-        {
-            "label": "Appointment Date", 
-            "next": "appointment-saved"
-        } 
-    ];
+        raw: true,
+    };
+    if(appointmentType === Object.keys(APPOINTMENT_TYPE)[0]){
+        options.where.type = Object.keys(APPOINTMENT_TYPE)[0]
+    }else{
+        options.where.type = {
+            [Op.ne]: Object.keys(APPOINTMENT_TYPE)[0]
+        }
+    }
+
+    // let appointments = await Appointment.findAll(options);
+    let availableHours = [];
+    // console.log(appointments)
+    // if(!appointments || appointments.length === 0){
+    //     console.log(workingHours.start, workingHours.end, workingHours)
+    for(let i = ( workingHours.start * 60 ); i < (workingHours.end * 60 ); i= i + APPOINTMENT_TYPE[appointmentType]){
+        console.log(i);
+        availableHours.push({
+            "label": i / 60 + ":00:00",
+        })
+    }
+    return availableHours;
+    // }
+    // for(let i = 0; i < appointments.length; i++){ A OPTIMISER
+    //     let appointment = appointments[i];
+    //     let appointmentEndHour = (new Date(appointment.date).getHours() / 60 ) + appointment.duration; //FIN DU RENDEZ VOUS ACTUEL
+    //     console.log(appointmentEndHour);
+    //     if(appointments[i + 1] && appointmentEndHour < new Date(appointments[i + 1].date).getHours() - APPOINTMENT_TYPE[appointmentType]){ 
+    //         availableHours.push({
+    //             "label": appointmentEndHour
+    //         });
+    //     }
+    // }
 }
 
 exports.QUESTIONS = {
@@ -152,7 +196,10 @@ exports.QUESTIONS = {
         }
     },
 
-    "maintenance": () => {
+    "maintenance": ({value: answer}, notes) => {
+        const date = new Date(answer, 0, 1);
+        notes.vehicleObtentionDate = date.toISOString();
+       
         return {
             "label": "In which year did you get your vehicle ?",
             "prompt":{
@@ -163,45 +210,38 @@ exports.QUESTIONS = {
     },
 
     "maintenance-ask-last-service": ({value: answer}, notes) => {
-        const date = new Date(answer, 0, 1);
-        console.log(date);
-        notes.vehicleObtentionDate = date;
-        // date.setFullYear(minDate.getFullYear() - answer);
         return {
             "label": "What is the last time you got your vehicle serviced?",
             "prompt": {
                 "type": "date",
-                "dynamic": true,
-                "next": (lastAnswer) => checkLastService(lastAnswer.value, "maintenance-check-appointment", "maintenance-ask-kilometers")
+                "next": (() => checkLastService(answer, "maintenance-check-appointment", "maintenance-ask-kilometers"))()
             }
         }
     },
 
-    "maintenance-check-appointment": (answer, notes) => {
-        const days = getAvalaibleDays('MAINTENANCE');
+    "maintenance-check-appointment": async ({value: answer}, notes) => {
+        const days = await getAvailableDays('MAINTENANCE');
+        if(days[answer]){
+            notes.appointmentType = 'MAINTENANCE';
+            notes.appointmentDay = days[answer];
+        }
 
         return {
             "label": "You should get your vehicle serviced",
             "prompt": {
                 "type": "Controlled",
                 "answers": days,
-                "dynamic": true,
-                "next": (lastAnswer) => {
-                    notes.appointmentType = 'MAINTENANCE';
-                    notes.appointmentDay = days[lastAnswer.value].value;
-                    return 'appointment-hours'
-                }
+                "next": 'appointment-hours'
             }
         }
     },
 
-    "maintenance-ask-kilometers": (answer, notes) => {
+    "maintenance-ask-kilometers": ({value: answer}, notes) => {
         return {
             "label": "How many kilometers did you drive since your last service?",
             "prompt":{
                 "type": "Int",
-                "dynamic": true,
-                "next": (lastAnswer) => checkKilometers(lastAnswer.value, "maintenance-check-appointment", "maintenance-ask-appointment")
+                "next": (() => checkKilometers(answer, "maintenance-check-appointment", "maintenance-ask-appointment"))()
             }
         }
     },
@@ -248,62 +288,53 @@ exports.QUESTIONS = {
         }
     },
 
-    "vehicle-info-city": (answer, notes) => {
-        const days = getAvalaibleDays('ESSAY-CITY');
-        notes.appointmentType = 'ESSAY-CITY';
-        notes.appointmentDay = days[answer.value].value;
+    "vehicle-info-city": async ({value: answer}, notes) => {
+        const days = await getAvailableDays('ESSAY-CITY');
+        if(days[answer]){
+            notes.appointmentType = 'ESSAY-CITY';
+            notes.appointmentDay = days[answer];
+        }
 
         return {
             "label": "We can schedule you a meeting",
             "prompt": {
                 "type": "Controlled",
                 "answers": days,
-                "dynamic": true,
-                "next": (lastAnswer) => {
-                    notes.appointmentType = 'ESSAY-CITY';
-                    notes.appointmentDay = days[lastAnswer.value].value;
-                    return 'appointment-hours'
-                }
+                "next": 'appointment-hours'
             }
         }
     },
 
-    "vehicle-info-offroad": (answer, notes) => {
-        const days = getAvalaibleDays('ESSAY-OFFROAD');
-        notes.appointmentType = 'ESSAY-OFFROAD';
-        notes.appointmentDay = days[answer.value].value;
+    "vehicle-info-offroad": async ({value: answer}, notes) => {
+        const days = await getAvailableDays('ESSAY-OFFROAD');
+        if(days[answer]){
+            notes.appointmentType = 'ESSAY-OFFROAD';
+            notes.appointmentDay = days[answer];
+        }
 
         return {
             "label": "We can schedule you a meeting",
             "prompt": {
                 "type": "Controlled",
                 "answers": days,
-                "dynamic": true,
-                "next": (lastAnswer) => {
-                    notes.appointmentType = 'ESSAY-OFFROAD';
-                    notes.appointmentDay = days[lastAnswer.value].value;
-                    return 'appointment-hours'
-                }
+                "next":'appointment-hours'
             }
         }
     },
 
-    "vehicle-info-sport": (answer, notes) => {
-        const days = getAvalaibleDays('ESSAY-SPORT');
-        notes.appointmentType = 'ESSAY-SPORT';
-        notes.appointmentDay = days[answer.value].value;
+    "vehicle-info-sport": async ({value: answer}, notes) => {
+        const days = await getAvailableDays('ESSAY-SPORT');
+        if(days[answer]){
+            notes.appointmentType = 'ESSAY-SPORT';
+            notes.appointmentDay = days[answer];
+        }
 
         return {
             "label": "We can schedule you a meeting",
             "prompt": {
                 "type": "Controlled",
                 "answers": days,
-                "dynamic": true,
-                "next": (lastAnswer) => {
-                    notes.appointmentType = 'ESSAY-SPORT';
-                    notes.appointmentDay = days[lastAnswer.value].value;
-                    return 'appointment-hours'
-                }
+                "next": 'appointment-hours'
             }
         }
     },
@@ -341,8 +372,9 @@ exports.QUESTIONS = {
         }
     },
 
-    "appointment-hours": (answer, notes) => {
-        const hours = getAvalaibleHours(notes.appointmentType, notes.appointmentDay);
+    "appointment-hours": async (answer, notes) => {
+        let hours = await getAppointmentHoursForDay(notes.appointmentType, notes.appointmentDay) ?? [];
+
         return {
             "label": "What time do you want to come ?",
             "prompt":{
