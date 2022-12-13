@@ -1,9 +1,21 @@
+@keyframes msgFadesIn {
+    0% {
+        opacity: 0;
+        transform: translate(0%, 10%);
+    }
+    100% {
+        opacity: 1;
+        
+    }
+}
+
 .main{
     width: 100%;
     padding: 10px 5px;
     display: flex;
     align-items: center;
-
+    animation: msgFadesIn 0.3s ease-in-out;
+    
     .picture{
         width: 50px;
         height: 40px;

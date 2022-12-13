@@ -70,6 +70,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                 return (
                     <div >
                         <input
+                            min={"0"}
                             placeholder="Type your answer here"
                             type="number"
                             value={intValue}
