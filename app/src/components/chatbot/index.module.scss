@@ -28,7 +28,7 @@
         padding: 10px;
         border-bottom: 1px solid #e1e1e1;
         user-select: none;
-        
+
         h2{
             color: #434343;
             font-weight: 400;
@@ -102,6 +102,31 @@
                         font-size: 12px;
                     }
                 }
+            }
+
+            .answered{
+                background-color: #44fbd0;
+                    padding: 10px;
+                    border-radius: 8px;
+                    margin: 5px;
+                    cursor: pointer;
+                    transition: 0.3s;
+                    border: 1px solid transparent;
+                    width: fit-content;
+                    
+                    &:hover{
+                        background-color: white;
+                        color: #2f9a9a;
+                        border: 1px solid #2f9a9a;
+
+                        p{
+                            color: #2f9a9a;
+                        }
+                    }
+
+                    p{
+                        font-size: 12px;
+                    }
             }
         }
     }
