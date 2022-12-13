@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer } from "react";
 import jwt_decode from "jwt-decode";
-import { TOKEN_STORAGE_KEY, CLIENT_ID } from "../constants/storage-keys";
+import { TOKEN_STORAGE_KEY, CLIENT_ID, CGU_ACCEPTED } from "../constants/storage-keys";
 
 const getFromtoken = token => {
     let decoded = jwt_decode(token);
@@ -28,7 +28,8 @@ const authInitData = () => {
 export const appInitData = {
     auth: authInitData(),
     eventSource: null,
-    client_id: localStorage.getItem(CLIENT_ID)??null
+    client_id: localStorage.getItem(CLIENT_ID)??null,
+    cgu_accepted: localStorage.getItem(CGU_ACCEPTED)??false
 };
 
 export const useAppContext = () => {
@@ -67,6 +68,11 @@ export const appStateReducer = (previousState, { action, payload }) => {
                 previousState.eventSource.close();
             }
             return { ...previousState, eventSource: payload };
+
+        case "ACCEPT_CGU":
+            localStorage.setItem(CGU_ACCEPTED, true);
+            return { ...previousState, cgu_accepted: true };
+            
         default:
             throw new Error('Undefined action');
     }

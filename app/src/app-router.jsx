@@ -1,5 +1,5 @@
 import React from "react";
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/navbar/navbar';
 import { useAppContext } from "./contexts/app-context";
@@ -14,20 +14,35 @@ const Login = lazy(() => import('./pages/login/login'));
 const SignUp = lazy(() => import('./pages/sign-up/sign-up'));
 const PageIntrouvable = lazy(() => import("./pages/404/404"));
 const AdminIndex = lazy(() => import("./pages/admin"));
+const CGUModal = lazy(() => import("./components/cgu-modal"));
 
 export default function AppRouter(){
 	const { appState, dispatch } = useAppContext();
+    const [cguModalVisible, setCguModalVisible] = useState(false);
 
     useEffect(() => {
-        if(appState.auth){
-            console.log(appState.auth)
-            console.log(appState.auth.email, (appState.auth.firstName + " " + appState.auth.lastName))
-            LogRocket.identify(appState.auth.id, {
-                name: (appState.auth.firstName + " " + appState.auth.lastName)??"unset",
-                email: appState.auth.email??"unset",
-            });
+        if(appState.cgu_accepted){
+            console.log("Started")
+            LogRocket.init('uvgdko/test-96ihm');
+            if(appState.auth){
+                LogRocket.identify(appState.auth.id, {
+                    name: (appState.auth.firstName + " " + appState.auth.lastName)??"unset",
+                    email: appState.auth.email??"unset",
+                });
+            }
+
+        }else{
+            console.log("NOT ACCEPTED")
         }
     }, [appState]);
+
+    useEffect(()=>{
+        if(!appState.cgu_accepted){
+            setTimeout(()=>{
+                setCguModalVisible(true);
+            }, 2000);
+        }
+    }, []);
 
     const initEventSource = useCallback(() => {
 		let url = SSE_URL + "?";
@@ -81,6 +96,9 @@ export default function AppRouter(){
                     <Route path="/" element={<Home/>}/>
                     <Route path="*" element={<PageIntrouvable/>}/>
                 </Routes>
+                <CGUModal 
+                    visible={cguModalVisible} 
+                    setVisible={setCguModalVisible} />
             </Suspense>
         </>
     )

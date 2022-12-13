@@ -64,7 +64,6 @@ export default function Home() {
 
   useEffect(() => {
     setPending(true);
-    console.log("Trying to join room");
     if (!socket.connected) return;
     socket.emit(ROOM_EMITTED_EVENTS.JOIN_ROOM, { roomId: selectedRoom });
   }, [selectedRoom]);
@@ -74,12 +73,9 @@ export default function Home() {
     if( !socket?.connected && !socketSetup){
       setSocketSetup(true);
       setListeners();
-    }else{
-      console.log("Nope")
     }
 
     return () => {
-      console.log("cleanup called");
       removeListeners();
       setSocketSetup(false);
       closeSocket();
