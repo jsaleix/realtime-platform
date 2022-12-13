@@ -8,7 +8,6 @@ const  workingHours = {
     end: 18,
 };
 const maxAppointmentTimeByDay = ((workingHours.end - workingHours.start)*60);
-const maxAppointmentTimeByWeek = (maxAppointmentTimeByDay * 5);
 
 const checkLastService = (serviceDateString, questionA, questionB) => {
     const minDate = new Date();
@@ -46,31 +45,6 @@ const getAvailableDays = async (appointmentType) => {
         });
     });
     return data;
-    // return [ 
-    //     {
-    //         "label": "2022-12-12 00:00:00",
-    //     },
-    //     {
-    //         "label": "2022-12-13 00:00:00",
-    //     },
-    //     {
-    //         "label": "2022-12-14 00:00:00",
-    //     }
-    // ];
-}
-
-const getAvailableHours = (appointmentType, day) => {
-    return [ 
-        {
-            "label": "08:00:00",
-        },
-        {
-            "label": "09:00:00",
-        },
-        {
-            "label": "10:00:00",
-        }
-    ];
 }
 
 const getApppointmentDaysDisponibility = async (appointmentType) => {
@@ -385,9 +359,39 @@ exports.QUESTIONS = {
         }
     },
 
-    "appointment-saved": (answer, notes) => {
+    "appointment-saved": async ({value: answer}, notes) => {
+        let hours = await getAppointmentHoursForDay(notes.appointmentType, notes.appointmentDay) ?? [];
+        let appointment = {};
+        if(hours[answer]){
+            let date = new Date(notes.appointmentDay?.label + ' ' + hours[answer]?.label);
+            if(!(date instanceof Date) || isNaN(date)){
+                console.log("NOTADATE");
+            }
+            try{
+                appointment = await Appointment.create({
+                    date: date,
+                    type: notes.appointmentType,
+                    duration: APPOINTMENT_TYPE[notes.appointmentType]
+                });
+            }catch(e){
+                console.log(e);
+            }
+        }
         return {
-            "label": "Appointment successfully saved",
+            "label": `Appointment successfully saved at the date ${appointment.date.toDateString()} for a duration of ${appointment.duration} minutes`,
+            "next": "origin"
+        }
+    },
+
+    "error": (answer, notes) => {
+        let msg = "error";
+
+        if(notes.error){
+            msg = notes.error;
+        }
+
+        return {
+            "label": msg,
             "next": "origin"
         }
     },

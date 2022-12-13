@@ -13,8 +13,7 @@ Appointment.init(
         },
         date: {
             type: DataTypes.DATE,
-            allowNull: false,
-            unique: true,
+            allowNull: false
         },
         duration: {
             type: DataTypes.INTEGER,
