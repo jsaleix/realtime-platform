@@ -7,23 +7,31 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
     const [dateValue, setDateValue] = useState(new Date());
     const [intValue, setIntValue] = useState(null);
     const [answered, setAnswered ] = useState(false);
+    const [answer, setAnswer] = useState(null);
 
     const answerPrompt = useCallback((value) => {
         const promptType = (message.prompt.type).toLowerCase();
-        if(["date", "string", "int"].includes(promptType)){
+        if(["date", "string", "int", "controlled"].includes(promptType)){
             switch( promptType ){
                 case "date":
                     if(value === "Invalid Date") return;
+                    setAnswer(value.toString());
                     break;
                 case "string":
                     if(!value) return;
+                    setAnswer(value);
                     break;
                 case "int":
-                    console.log(intValue)
                     if(!value || value < 0) return;
+                    setAnswer(value);
+                    break;
+                case "controlled":
+                    console.log( "here", message.prompt.answers[value] )
+                    setAnswer( message.prompt.answers[value].label );
                     break;
             }
         }
+
         answerAction({ value });
         setAnswered(true);
     }, []);
@@ -98,6 +106,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                     {renderPrompt()}
                 </div>
             )}
+            {answered && <div className={style.answered}><p>{answer}</p></div>}
         </div>
     )
 };
@@ -124,11 +133,11 @@ const ChatBot = ({close}) => {
         const tmpSocket = io("http://localhost:3000", {path: "/chatbot"});
 
         tmpSocket.on("connect", () => {
-            console.log("CONNECT");
+            //console.log("CONNECT");
         });
 
         tmpSocket.on("message_received", (msg) => {
-            console.log(msg);
+            // console.log(msg);
             setMessages(prevMsg => [...prevMsg, msg]);
         });
 

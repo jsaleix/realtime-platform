@@ -10,26 +10,6 @@ const ChatBot = lazy(() => import("../chatbot"));
 
 export default function ChatBotCta(){
     const [ isOpen, setIsOpen ] = useState(true);
-    const { socket } = useSocketContext();
-
-    useEffect(() => {
-        socket.on(CHATBOT_RECEIVED_EVENTS.CONTACT_EMAIL, (email) => {
-            console.log(email);
-        })
-        return () => {
-            socket.off(CHATBOT_RECEIVED_EVENTS.CONTACT_EMAIL);
-        }
-    })
-
-    const startChat = () => {
-        socket.emit(CHATBOT_EMITTED_EVENTS.APPOINTMENT_DISPONIBILITY);
-        setIsOpen(true);
-    }
-
-    const closeChat = () => {
-        socket.emit(CHATBOT_EMITTED_EVENTS.END);
-        setIsOpen(false);
-    }
 
     return(
         <div className={style.chatbot}>
