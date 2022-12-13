@@ -5,7 +5,28 @@ import { io } from "socket.io-client";
 const MessageItem = ({ message, isCurrent, answerAction }) => {
     const [stringValue, setStringValue] = useState("0");
     const [dateValue, setDateValue] = useState(new Date());
-    const [intValue, setIntValue] = useState(0);
+    const [intValue, setIntValue] = useState(null);
+    const [answered, setAnswered ] = useState(false);
+
+    const answerPrompt = useCallback((value) => {
+        const promptType = (message.prompt.type).toLowerCase();
+        if(["date", "string", "int"].includes(promptType)){
+            switch( promptType ){
+                case "date":
+                    if(value === "Invalid Date") return;
+                    break;
+                case "string":
+                    if(!value) return;
+                    break;
+                case "int":
+                    console.log(intValue)
+                    if(!value || value < 0) return;
+                    break;
+            }
+        }
+        answerAction({ value });
+        setAnswered(true);
+    }, []);
 
     const renderPrompt = useCallback(() => {
         if(!message?.prompt || !message.prompt.type) return;
@@ -19,9 +40,9 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                             type="date"
                             value={dateValue}
                             onChange={e => setDateValue(e.target.value)}
-                            onKeyDown={e => e.key === "Enter" && answerAction({ value: dateValue})}
+                            onKeyDown={e => e.key === "Enter" && answerPrompt(dateValue)}
                         />
-                        <button onClick={() => answerAction({ value: dateValue})}>Send</button>
+                        <button className="btn blue" onClick={() => answerPrompt(dateValue)}>Send</button>
                     </div>
                 )
             case "string":
@@ -32,9 +53,9 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                             type="text"
                             value={stringValue}
                             onChange={e => setStringValue(e.target.value)}
-                            onKeyDown={e => e.key === "Enter" && answerAction({ value: stringValue})}
+                            onKeyDown={e => e.key === "Enter" && answerPrompt(stringValue)}
                         />
-                        <button onClick={() => answerAction({ value: stringValue})}>Send</button>
+                        <button className="btn blue" onClick={() => answerPrompt(stringValue)}>Send</button>
                     </div>
                 )
             case "int":
@@ -45,9 +66,9 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                             type="number"
                             value={intValue}
                             onChange={e => setIntValue(parseInt(e.target.value))}
-                            onKeyDown={e => e.key === "Enter" && answerAction({ value: intValue})}
+                            onKeyDown={e => e.key === "Enter" && answerPrompt(intValue)}
                          />
-                        <button onClick={() => answerAction({ value: intValue})}>Send</button>
+                        <button className="btn blue" onClick={() => answerPrompt(intValue)}>Send</button>
                     </div>
                 )
 
@@ -57,7 +78,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
                         {message.prompt.answers.map(({label, next}, index) => 
                             <div key={index}
                                 className={style.action} 
-                                onClick={() => answerAction({value: index})}
+                                onClick={() => answerPrompt(index)}
                             >
                                 <p>{label}</p>
                             </div>)
@@ -72,7 +93,7 @@ const MessageItem = ({ message, isCurrent, answerAction }) => {
             <div className={style.message_content}>
                 <p>{message.label}</p>
             </div>
-            {isCurrent && (
+            {(isCurrent && !answered) && (
                 <div className={style.actions}>
                     {renderPrompt()}
                 </div>
@@ -141,15 +162,15 @@ const ChatBot = ({close}) => {
                 {messages.length < 1 
                 ? <p>No messages yet</p>
                 : (<>
-                    {messages.map((message, index) => 
-                        <MessageItem
-                            key={index}
-                            message={message}
-                            isCurrent={index === (messages.length - 1)}
-                            answerAction={answerAction}
-                        />
-                    )}
-                    <div ref={lastMsgRef}/>
+                        {messages.map((message, index) => 
+                            <MessageItem
+                                key={index}
+                                message={message}
+                                isCurrent={index === (messages.length - 1)}
+                                answerAction={answerAction}
+                            />
+                        )}
+                        <div ref={lastMsgRef}/>
                     </>
                 )
                 }
