@@ -143,29 +143,29 @@ const getAppointmentHoursForDay = async (appointmentType, {label: day}) => {
         }
     }
 
-    // let appointments = await Appointment.findAll(options);
+    let appointments = await Appointment.findAll(options);
     let availableHours = [];
-    // console.log(appointments)
-    // if(!appointments || appointments.length === 0){
-    //     console.log(workingHours.start, workingHours.end, workingHours)
     for(let i = ( workingHours.start * 60 ); i < (workingHours.end * 60 ); i= i + APPOINTMENT_TYPE[appointmentType]){
-        console.log(i);
+        if((i + APPOINTMENT_TYPE[appointmentType]) / 60 > workingHours.end){
+            break;
+        }
         availableHours.push({
             "label": i / 60 + ":00:00",
         })
     }
+    if(appointments.length === 0){
+        return availableHours;
+    }
+    availableHours = Object.entries(availableHours).map(([key, value]) => {
+        let splittedValue = value.label.split(":");
+        date.setHours(splittedValue[0], splittedValue[1], splittedValue[2], 0);
+        let appointment = appointments.find(appointment => appointment.date.getTime() === date.getTime());
+        if(appointment){
+            return;
+        }
+        return value;
+    }).filter(value => value);
     return availableHours;
-    // }
-    // for(let i = 0; i < appointments.length; i++){ A OPTIMISER
-    //     let appointment = appointments[i];
-    //     let appointmentEndHour = (new Date(appointment.date).getHours() / 60 ) + appointment.duration; //FIN DU RENDEZ VOUS ACTUEL
-    //     console.log(appointmentEndHour);
-    //     if(appointments[i + 1] && appointmentEndHour < new Date(appointments[i + 1].date).getHours() - APPOINTMENT_TYPE[appointmentType]){ 
-    //         availableHours.push({
-    //             "label": appointmentEndHour
-    //         });
-    //     }
-    // }
 }
 
 exports.QUESTIONS = {
