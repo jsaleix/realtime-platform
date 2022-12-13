@@ -5,6 +5,9 @@ import { AppContextProvider } from './contexts/app-context';
 import { SocketContextProvider } from "./contexts/socket-context";
 import "react-toastify/dist/ReactToastify.css";
 import AppRouter from './app-router';
+import LogRocket from 'logrocket';
+
+LogRocket.init('uvgdko/test-96ihm');
 
 function App() {
   return (

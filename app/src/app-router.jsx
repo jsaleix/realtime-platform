@@ -7,6 +7,7 @@ import { SSE_URL } from "./constants/urls";
 import { useCallback } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LogRocket from 'logrocket';
 
 const Home = lazy(() => import('./pages/home/home'));
 const Login = lazy(() => import('./pages/login/login'));
@@ -16,6 +17,18 @@ const AdminIndex = lazy(() => import("./pages/admin"));
 
 export default function AppRouter(){
 	const { appState, dispatch } = useAppContext();
+
+    useEffect(() => {
+        if(appState.auth){
+            console.log(appState.auth)
+            console.log(appState.auth.email, (appState.auth.firstName + " " + appState.auth.lastName))
+            LogRocket.identify(appState.auth.id, {
+                name: (appState.auth.firstName + " " + appState.auth.lastName)??"unset",
+                email: appState.auth.email??"unset",
+            });
+        }
+    }, [appState]);
+
     const initEventSource = useCallback(() => {
 		let url = SSE_URL + "?";
 		let { client_id } = appState;
