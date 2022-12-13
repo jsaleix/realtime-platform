@@ -9,7 +9,7 @@ import { useCallback } from "react";
 const ChatBot = lazy(() => import("../chatbot"));
 
 export default function ChatBotCta(){
-    const [ isOpen, setIsOpen ] = useState(true);
+    const [ isOpen, setIsOpen ] = useState(false);
 
     return(
         <div className={style.chatbot}>
