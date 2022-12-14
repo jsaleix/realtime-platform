@@ -2,8 +2,13 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import style from "./index.module.scss";
 import { io } from "socket.io-client";
 import { useAppContext } from "../../contexts/app-context";
+import {
+  CONVERSATION_RECEIVED_EVENTS,
+  CONVERSATION_EMITTED_EVENTS,
+} from "../../constants/wss-events";
+import { displayMsg } from "../../utils/toast";
 
-export default function AdminConversation({close}) {
+export default function AdminConversation({ close }) {
   const { appState } = useAppContext();
   const [socket, setsocket] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -18,29 +23,35 @@ export default function AdminConversation({close}) {
   }, [lastMsgRef, msgContainerRef]);
 
   useEffect(() => {
+    if (socket) {
+      console.log("socket already set");
+      return;
+    }
+
+    console.log("setting socket");
     const { token } = appState.auth;
     const tmpSocket = io("http://localhost:3000", {
       path: "/conversation",
       auth: { token },
     });
 
-    tmpSocket.on("connect", () => {
+    tmpSocket.on(CONVERSATION_RECEIVED_EVENTS.NO_ADMIN_AVAILABLE, () => {
       console.log("CONNECT");
+      displayMsg("No admin available", "error");
     });
 
     // tmpSocket.on("message_received", (msg) => {
     //     // console.log(msg);
     //     setMessages(prevMsg => [...prevMsg, msg]);
     // });
+    setsocket(tmpSocket);
 
-    if (!socket) {
-      setsocket(tmpSocket);
-    }
     return () => {
-      if (socket) {
-        socket.disconnect();
-        socket.off("connect");
-        socket.off("message_received");
+      if (tmpSocket) {
+        console.log("front disconnected");
+        tmpSocket.disconnect();
+        tmpSocket.off("connect");
+        tmpSocket.off("message_received");
         setsocket(null);
         setMessages([]);
       }

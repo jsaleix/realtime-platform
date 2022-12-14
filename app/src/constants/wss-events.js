@@ -51,6 +51,7 @@ export const CONVERSATION_EMITTED_EVENTS = {
     JOIN_CHANNEL: "conversation_join",
     LEAVE_CHANNEL: "conversation_leave",
     MESSAGE: "conversation_message",
+    GET_USERS_WAITING: "conversation_get_users_waiting",
 }
 
 export const CONVERSATION_RECEIVED_EVENTS = {
@@ -59,4 +60,6 @@ export const CONVERSATION_RECEIVED_EVENTS = {
     USER_LEFT: "conversation_user_left",
     ADMINS_AVAILABLE: "conversation_admins_available",
     NO_ADMIN_AVAILABLE: "conversation_no_admin_available",
+    END: "conversation_end",
+    USERS_WAITING: "conversation_users_waiting",
 }
