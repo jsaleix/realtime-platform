@@ -3,7 +3,7 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/navbar/navbar';
 import { useAppContext } from "./contexts/app-context";
-import { SSE_URL } from "./constants/urls";
+import { SSE_URL, API_URL } from "./constants/urls";
 import { useCallback } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,6 +19,10 @@ const CGUModal = lazy(() => import("./components/cgu-modal"));
 export default function AppRouter(){
 	const { appState, dispatch } = useAppContext();
     const [cguModalVisible, setCguModalVisible] = useState(false);
+
+    useEffect(()=>{
+        console.log(API_URL);
+    }, []);
 
     useEffect(() => {
         if(appState.cgu_accepted){
@@ -71,6 +75,11 @@ export default function AppRouter(){
             const data = JSON.parse(e.data).message;
             toast(data);
         })
+
+        eventSource.addEventListener("conversation_admins_available", (e) => {
+            const data = JSON.parse(e.data).message;
+            toast(data);
+        });
 
         dispatch({action: "SET_EVENT_SOURCE", payload: eventSource});
 	}, [appState.auth]);

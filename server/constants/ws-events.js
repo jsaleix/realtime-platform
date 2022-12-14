@@ -42,3 +42,18 @@ exports.CHATBOT_RECEIVED_EVENTS = {
     CONVERSATION_CONTACT_PHONE: "conversation_contact_phone",
     END: "end",
 };
+
+
+exports.CONVERSATION_RECEIVED_EVENTS = {
+    JOIN_CHANNEL: "conversation_join",
+    LEAVE_CHANNEL: "conversation_leave",
+    MESSAGE: "conversation_message",
+}
+
+exports.CONVERSATION_EMITTED_EVENTS = {
+    USER_JOINED: "conversation_user_joined",
+    NEW_MESSAGE: "conversation_new_message",
+    USER_LEFT: "conversation_user_left",
+    ADMINS_AVAILABLE: "conversation_admins_available",
+    NO_ADMIN_AVAILABLE: "conversation_no_admin_available",
+}

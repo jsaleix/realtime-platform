@@ -7,6 +7,7 @@ import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-e
 import style from "./home.module.scss";
 import { useSocketContext } from "../../contexts/socket-context";
 import ChatBotCta from "../../components/chatbot-cta";
+import ConversationCta from "../../components/conversation-cta";
 
 export default function Home() {
   const { appState } = useAppContext();
@@ -109,6 +110,7 @@ export default function Home() {
         <p>Please login to see the rooms</p>
       }
       <ChatBotCta/>
+      <ConversationCta/>
     </div>
   );
 }
