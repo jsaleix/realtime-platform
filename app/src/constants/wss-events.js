@@ -52,6 +52,7 @@ export const CONVERSATION_EMITTED_EVENTS = {
     LEAVE_CHANNEL: "conversation_leave",
     MESSAGE: "conversation_message",
     GET_USERS_WAITING: "conversation_get_users_waiting",
+    ACCEPT_REQUEST: "conversation_accept_request",
 }
 
 export const CONVERSATION_RECEIVED_EVENTS = {

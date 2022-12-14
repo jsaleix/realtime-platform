@@ -8,6 +8,9 @@ import { useAppContext } from "../../../contexts/app-context";
 import style from "./index.module.scss";
 
 const Conversation = ({ socket, close }) => {
+    const { appState } = useAppContext();
+    const [messages, setMessages] = useState([]);
+
     return <div className={style.conversation}>pas mal</div>;
 };
 

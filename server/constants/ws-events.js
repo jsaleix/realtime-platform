@@ -49,6 +49,7 @@ exports.CONVERSATION_RECEIVED_EVENTS = {
     LEAVE_CHANNEL: "conversation_leave",
     MESSAGE: "conversation_message",
     GET_USERS_WAITING: "conversation_get_users_waiting",
+    ACCEPTED_REQUEST: "conversation_accept_request",
 }
 
 exports.CONVERSATION_EMITTED_EVENTS = {
