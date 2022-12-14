@@ -1,0 +1,26 @@
+
+.conversations{
+
+    .requests{
+        display: flex;
+        flex-direction: column;
+
+        h2{
+            margin-bottom: 1rem;
+        }
+
+        .request{
+            display: flex;
+            align-items: center;
+            width: 100%;
+            border: 1px solid rgb(206, 206, 206);
+            border-radius: 5px;
+            padding: 5px 10px;
+
+            button{
+                margin-left: auto;
+            }
+        }
+    }
+
+}

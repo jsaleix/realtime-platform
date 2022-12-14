@@ -26,7 +26,6 @@ export default function AppRouter(){
 
     useEffect(() => {
         if(appState.cgu_accepted){
-            console.log("Started")
             LogRocket.init('uvgdko/test-96ihm');
             if(appState.auth){
                 LogRocket.identify(appState.auth.id, {

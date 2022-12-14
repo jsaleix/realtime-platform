@@ -12,7 +12,7 @@ const get_users_waitings = () => {
     const { lastName, firstName, id } = client.user;
     return { name: `${firstName} ${lastName}`, id };
   });
-}
+};
 exports.conversationHandler = (io, socket) => {
   //requires a authenticated user
   const token = socket.handshake.auth?.token;
@@ -41,8 +41,8 @@ exports.conversationHandler = (io, socket) => {
       data: { message: "A user is requesting a conversation" },
     });
     const users_waiting = get_users_waitings();
-    for(let admin of admins) {
-      admin.emit(CONVERSATION_EMITTED_EVENTS.USERS_WAITING, {users_waiting} );
+    for (let admin of admins) {
+      admin.emit(CONVERSATION_EMITTED_EVENTS.USERS_WAITING, { users_waiting });
     }
   }
 
@@ -57,11 +57,16 @@ exports.conversationHandler = (io, socket) => {
       admins.splice(admins.indexOf(socket), 1);
     } else {
       clients_requests.splice(clients_requests.indexOf(socket), 1);
-      console.log("clients_requests", clients_requests.map((client) => client.user.id));
+      console.log(
+        "clients_requests",
+        clients_requests.map((client) => client.user.id)
+      );
       const users_waiting = get_users_waitings();
-      for(let admin of admins) {
-        admin.emit(CONVERSATION_EMITTED_EVENTS.USERS_WAITING, {users_waiting} );
+      for (let admin of admins) {
+        admin.emit(CONVERSATION_EMITTED_EVENTS.USERS_WAITING, {
+          users_waiting,
+        });
       }
     }
-  })
+  });
 };
