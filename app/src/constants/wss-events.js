@@ -46,3 +46,15 @@ export const GLOBAL_EVENTS = {
     DISCONNECT: "disconnect",
     ERROR: "error"
 };
+
+export const CONVERSATION_RECEIVED_EVENTS = {
+    JOIN_CHANNEL: "conversation_join",
+    LEAVE_CHANNEL: "conversation_leave",
+    MESSAGE: "conversation_message",
+}
+
+export const CONVERSATION_EMITTED_EVENTS = {
+    USER_JOINED: "conversation_user_joined",
+    NEW_MESSAGE: "conversation_new_message",
+    USER_LEFT: "conversation_user_left",
+}
