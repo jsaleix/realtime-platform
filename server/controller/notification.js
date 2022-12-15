@@ -15,7 +15,7 @@ exports.getSSE = (req, res, next) => {
         if(!client_id){
             client_id = randomUUID();
         }
-        user = verifyToken(req.query.token);
+        user = verifyToken(token);
         if(user && user.isAdmin){
             admins[user.id] = res;
         } else {
@@ -38,7 +38,8 @@ exports.getSSE = (req, res, next) => {
             Connection: "keep-alive",
         };
         res.writeHead(200, headers);
-
+        console.log(Object.keys(admins), Object.keys(users));
+        broadcastAdmins({type: 'conversation_admins_available', data: { admins: Object.keys(admins)}})
         broadcastUser({type: 'connect', client_id}, client_id);
     } catch(err){
         console.error(err);

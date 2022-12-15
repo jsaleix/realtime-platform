@@ -24,6 +24,10 @@ const Requests = ({ socket, handleRequest }) => {
         console.log("getting requests");
         socket.emit(CONVERSATION_EMITTED_EVENTS.GET_USERS_WAITING);
 
+        socket.on("connect_error", () => {
+            console.log("connect_error");
+        });
+        
         socket.on(
             CONVERSATION_RECEIVED_EVENTS.USERS_WAITING,
             ({ users_waiting }) => {
@@ -75,8 +79,7 @@ const Conversations = () => {
 
     useEffect(() => {
         const { token } = appState.auth;
-        const tmpSocket = io("http://localhost:3000", {
-            path: "/conversation",
+        const tmpSocket = io("http://localhost:3000/conversation", {
             auth: { token },
         });
         setSocket(tmpSocket);

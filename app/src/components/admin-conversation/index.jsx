@@ -30,8 +30,7 @@ export default function AdminConversation({ close }) {
 
     console.log("setting socket");
     const { token } = appState.auth;
-    const tmpSocket = io("http://localhost:3000", {
-      path: "/conversation",
+    const tmpSocket = io("http://localhost:3000/conversation", {
       auth: { token },
     });
 

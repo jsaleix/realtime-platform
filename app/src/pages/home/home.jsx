@@ -49,8 +49,8 @@ export default function Home() {
       setRooms(data);
     });
 
-    socket.on(ROOM_RECEIVED_EVENTS.USER_JOINED, (data) => {
-      console.log("A user has entered the room", data);
+    socket.on("connect_error", () => {
+      console.log("%cAN ERROR OCCURRED WTFFF", "color: red")
     });
 
     socket.on(ROOM_RECEIVED_EVENTS.USER_LEFT, (data) => {

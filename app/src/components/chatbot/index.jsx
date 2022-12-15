@@ -146,7 +146,7 @@ const ChatBot = ({ close }) => {
   }, [lastMsgRef, msgContainerRef]);
 
   useEffect(() => {
-    const tmpSocket = io("http://localhost:3000", { path: "/chatbot" });
+    const tmpSocket = io("http://localhost:3000/chatbot");
 
     tmpSocket.on("connect", () => {
       //console.log("CONNECT");

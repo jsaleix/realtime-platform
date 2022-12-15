@@ -21,12 +21,12 @@ export const useSocketContext = () => {
 export const SocketContextProvider = ({children}) => {
     const { appState: { auth:{ token } }, dispatch } = useAppContext();
     const socket = useMemo(() => {
-        return io(SOCKET_URL, {
+        return io(SOCKET_URL + "/channel", {
                                 autoConnect: false,
-                                path: "/channel",
                                 auth: { token },
                             });
-        }, [token])
+        }, [token]
+    );
 
     const closeSocket = useCallback(() => {
         socket.close();

@@ -1,7 +1,8 @@
 exports.GLOBAL_EVENTS = {
     CONNECT: "connect",
     DISCONNECT: "disconnect",
-    ERROR: "error"
+    ERROR: "error",
+    CONNECTION_ERROR: "connection_error",
 };
 
 exports.ROOM_EMITTED_EVENTS = {

@@ -29,7 +29,7 @@ export default function Channel({roomId}){
 
     useEffect(()=>{
         if(!socket || !socket.id ) return;
-
+        console.log(socket)
         socket.on(ROOM_RECEIVED_EVENTS.INIT_MESSAGES, ({messages}) => {
             console.log(messages);
             setMessages(messages);
