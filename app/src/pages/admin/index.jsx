@@ -23,7 +23,7 @@ export default function Admin() {
                 <div className={style.admin_nav}>
                     <NavLink className={navLinkStyle} to={"/admin"} end>Realtime Panel</NavLink>
                     <NavLink className={navLinkStyle} to="/admin/users">Users</NavLink>
-                    <NavLink className={navLinkStyle} to="/admin/conversations">Users</NavLink>
+                    <NavLink className={navLinkStyle} to="/admin/conversations">Conversation requests</NavLink>
                 </div>
             </div>
             <Routes>

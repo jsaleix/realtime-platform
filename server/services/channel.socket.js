@@ -120,7 +120,6 @@ exports.channelHandler = (io, socket) => {
         }
     })
 
-
     //Checking if the room is full
     if(rooms[roomIdx].users.length === rooms[roomIdx].maxUsers) return;
 

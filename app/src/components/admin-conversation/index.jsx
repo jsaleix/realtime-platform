@@ -3,8 +3,8 @@ import style from "./index.module.scss";
 import { io } from "socket.io-client";
 import { useAppContext } from "../../contexts/app-context";
 import {
-  CONVERSATION_RECEIVED_EVENTS,
-  CONVERSATION_EMITTED_EVENTS,
+  CONVERSATION_BACK_EVENTS,
+  CONVERSATION_FRONT_EVENTS,
 } from "../../constants/wss-events";
 import { displayMsg } from "../../utils/toast";
 
@@ -14,6 +14,15 @@ export default function AdminConversation({ close }) {
   const [messages, setMessages] = useState([]);
   const lastMsgRef = useRef(null);
   const msgContainerRef = useRef(null);
+  const [waiting, setWaiting] = useState(true);
+  const [input, setInput] = useState("");
+  
+  const sendMessage = useCallback(() => {
+    if (socket && input) {
+      socket.emit(CONVERSATION_FRONT_EVENTS.MESSAGE, input);
+      setInput("");
+    }
+  }, [socket, input]);
 
   const scrollToBottom = useCallback(() => {
     // if(lastMsgRef.current && msgContainerRef.current){
@@ -34,23 +43,30 @@ export default function AdminConversation({ close }) {
       auth: { token },
     });
 
-    tmpSocket.on(CONVERSATION_RECEIVED_EVENTS.NO_ADMIN_AVAILABLE, () => {
-      console.log("CONNECT");
-      displayMsg("No admin available", "error");
+    tmpSocket.on(CONVERSATION_BACK_EVENTS.REQUEST_ACCEPTED, () => {
+      console.log("REQUEST ACCEPTED");
+      setWaiting(false);
     });
 
-    // tmpSocket.on("message_received", (msg) => {
-    //     // console.log(msg);
-    //     setMessages(prevMsg => [...prevMsg, msg]);
-    // });
+    tmpSocket.on(CONVERSATION_BACK_EVENTS.NEW_MESSAGE, (message) => {
+      console.log("MESSAGE_RECEIVED", message);
+      setMessages((prev) => [...prev, message]);
+    });
+
+    tmpSocket.on(CONVERSATION_BACK_EVENTS.ADMIN_LEFT, () => {
+      displayMsg("Admin left the conversation", "error");
+      close();
+    });
+
     setsocket(tmpSocket);
 
     return () => {
       if (tmpSocket) {
         console.log("front disconnected");
         tmpSocket.disconnect();
-        tmpSocket.off("connect");
-        tmpSocket.off("message_received");
+        tmpSocket.off(CONVERSATION_BACK_EVENTS.REQUEST_ACCEPTED);
+        tmpSocket.off(CONVERSATION_BACK_EVENTS.NEW_MESSAGE);
+        tmpSocket.off(CONVERSATION_BACK_EVENTS.ADMIN_LEFT);
         setsocket(null);
         setMessages([]);
       }
@@ -83,14 +99,36 @@ export default function AdminConversation({ close }) {
         </svg>
       </div>
       <div className={style.chatbot_messages} ref={msgContainerRef}>
-        {messages.length < 1 ? (
-          <p>No messages yet</p>
-        ) : (
+        {
+          waiting ?
+          <div className={style.waiting}>
+            <p>Waiting for an admin to connect...</p>
+          </div>
+          :
           <>
-            {null}
-            <div ref={lastMsgRef} />
+            {
+            messages.length === 0 
+              ? 
+              <div className={style.waiting}>
+                <p>Start the conversation by sending a message</p>
+              </div>
+              :
+              messages.map((msg, index) => <p key={index}>{JSON.stringify(msg)}</p>)
+            }
+            <div className={style.input}>
+                <input 
+                    type="text" 
+                    placeholder="message" 
+                    value={input} 
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && sendMessage()}
+                />
+                <button 
+                    className="btn blue" 
+                    onClick={sendMessage}>Send</button>
+            </div>
           </>
-        )}
+        }
       </div>
     </div>
   );

@@ -1,10 +1,10 @@
 const clients_requests = [];
 const admins = [];
-const current_conversations = [["a", "b"]];
+const current_conversations = [];
 
 const {
-    CONVERSATION_RECEIVED_EVENTS,
-    CONVERSATION_EMITTED_EVENTS,
+    CONVERSATION_FRONT_EVENTS,
+    CONVERSATION_BACK_EVENTS,
 } = require("../constants/ws-events");
 const { broadcastAdmins } = require("./sse");
 const { wsJwtVerify } = require("./utils/middleware");
@@ -25,7 +25,7 @@ const disconnect_client = (socket) => {
         clients_requests.splice(clientRequestIdx, 1);
         const users_waiting = get_users_waitings();
         for (let admin of admins) {
-            admin.emit(CONVERSATION_EMITTED_EVENTS.USERS_WAITING, {
+            admin.emit(CONVERSATION_BACK_EVENTS.USERS_WAITING, {
                 users_waiting,
             });
         }
@@ -38,7 +38,7 @@ const disconnect_client = (socket) => {
             const otherUserSocket = clients_requests.find(
                 (client) => client.user.id === otherUser
             );
-            otherUserSocket.emit(CONVERSATION_EMITTED_EVENTS.USER_LEFT);
+            otherUserSocket.emit(CONVERSATION_BACK_EVENTS.USER_LEFT);
             current_conversations.splice(conversation, 1);
         }
     }
@@ -67,19 +67,19 @@ const connectionLoadBalancer = (socket, next) => {
     } else {
         console.log('il rentre pas dans le else');
         if (admins.length === 0) {
-            socket.emit(CONVERSATION_EMITTED_EVENTS.NO_ADMIN_AVAILABLE);
+            socket.emit(CONVERSATION_BACK_EVENTS.NO_ADMIN_AVAILABLE);
             socket.disconnect();
             return;
         }
 
         clients_requests.push(socket);
         broadcastAdmins({
-            type: CONVERSATION_EMITTED_EVENTS.ADMINS_AVAILABLE,
+            type: CONVERSATION_BACK_EVENTS.ADMINS_AVAILABLE,
             message: "A user is requesting a conversation",
         });
         const users_waiting = get_users_waitings();
         for (let admin of admins) {
-            admin.emit(CONVERSATION_EMITTED_EVENTS.USERS_WAITING, {
+            admin.emit(CONVERSATION_BACK_EVENTS.USERS_WAITING, {
                 users_waiting,
             });
         }
@@ -93,10 +93,11 @@ exports.conversationHandler = (io) => {
     io.of("/conversation").use(connectionLoadBalancer);
 
     io.of("/conversation").on("connection", (socket) => {
-        socket.on(CONVERSATION_RECEIVED_EVENTS.GET_USERS_WAITING, () => {
+
+        socket.on(CONVERSATION_FRONT_EVENTS.GET_USERS_WAITING_ADMIN, () => {
             if (!socket.user.isAdmin) return;
             const users_waiting = get_users_waitings();
-            socket.emit(CONVERSATION_EMITTED_EVENTS.USERS_WAITING, {
+            socket.emit(CONVERSATION_BACK_EVENTS.USERS_WAITING, {
                 users_waiting,
             });
         });
@@ -104,6 +105,13 @@ exports.conversationHandler = (io) => {
         socket.on("disconnect", () => {
             if (socket.user.isAdmin) {
                 admins.splice(admins.indexOf(socket), 1);
+                const possibleConversation = current_conversations.find( (conversation) => conversation.includes(socket));
+                if (possibleConversation) {
+                    const otherUser = possibleConversation.find((sock) => sock.id !== socket.id);
+                    otherUser.emit(CONVERSATION_BACK_EVENTS.ADMIN_LEFT);
+                    current_conversations.splice(possibleConversation, 1);
+                }
+
             } else {
                 clients_requests.splice(clients_requests.indexOf(socket), 1);
                 console.log(
@@ -112,33 +120,36 @@ exports.conversationHandler = (io) => {
                 );
                 const users_waiting = get_users_waitings();
                 for (let admin of admins) {
-                    admin.emit(CONVERSATION_EMITTED_EVENTS.USERS_WAITING, {
+                    admin.emit(CONVERSATION_BACK_EVENTS.USERS_WAITING, {
                         users_waiting,
                     });
                 }
             }
         });
 
-        socket.on(CONVERSATION_RECEIVED_EVENTS.ACCEPTED_REQUEST, ({ user_id }) => {
-            console.log("ACCEPTED", user_id);
+        socket.on(CONVERSATION_FRONT_EVENTS.ACCEPTED_REQUEST_ADMIN, ({ user_id }) => {
             const user = clients_requests.find(
                 (client) => client.user.id === user_id
             );
             if (!user) return;
 
             clients_requests.splice(clients_requests.indexOf(user), 1);
-            socket.to(user.id).emit(CONVERSATION_EMITTED_EVENTS.REQUEST_ACCEPTED);
+            socket.to(user.id).emit(CONVERSATION_BACK_EVENTS.REQUEST_ACCEPTED);
+            current_conversations.push([socket, user]);
         });
 
-        socket.on(CONVERSATION_RECEIVED_EVENTS.MESSAGE, (data) => {
+        socket.on(CONVERSATION_FRONT_EVENTS.MESSAGE, (data) => {
             const conversation = current_conversations.find((conversation) =>
-                conversation.includes(socket.user.id)
+                conversation.includes(socket)
             );
             if (!conversation) return;
-            const otherUser = conversation.find((id) => id !== socket.user.id);
-            const otherUserSocket = clients_requests.find(
-                (client) => client.user.id === otherUser
-            );
+            conversation.forEach((client) => {
+                client.emit(CONVERSATION_BACK_EVENTS.NEW_MESSAGE, data);
+            });
+            
+            // const otherUser = conversation.find((id) => id !== socket.user.id);
+            // otherUser.emit(CONVERSATION_BACK_EVENTS.MESSAGE, data);
         });
+
     });
 };

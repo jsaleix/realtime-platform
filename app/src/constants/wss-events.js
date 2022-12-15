@@ -64,4 +64,22 @@ export const CONVERSATION_RECEIVED_EVENTS = {
     NO_ADMIN_AVAILABLE: "conversation_no_admin_available",
     END: "conversation_end",
     USERS_WAITING: "conversation_users_waiting",
+    ACCEPTED_REQUEST: "conversation_accept_request",
+}
+
+export const CONVERSATION_FRONT_EVENTS = {
+    LEAVE: "conversation_leave",
+    MESSAGE: "conversation_message",
+    GET_USERS_WAITING_ADMIN: "conversation_get_users_waiting",
+    ACCEPTED_REQUEST_ADMIN: "conversation_accept_request"
+}
+
+export const CONVERSATION_BACK_EVENTS = {
+    NO_ADMIN_AVAILABLE: "conversation_no_admin_available",
+    ADMINS_AVAILABLE: "conversation_admins_available",
+    ADMIN_LEFT: "conversation_admin_left",
+    NEW_MESSAGE: "conversation_new_message",
+    USER_JOINED: "conversation_user_joined",
+    USERS_WAITING: "conversation_users_waiting",
+    REQUEST_ACCEPTED: "conversation_request_accepted"
 }

@@ -46,20 +46,19 @@ exports.CHATBOT_RECEIVED_EVENTS = {
 };
 
 
-exports.CONVERSATION_RECEIVED_EVENTS = {
-    JOIN_CHANNEL: "conversation_join",
-    LEAVE_CHANNEL: "conversation_leave",
+exports.CONVERSATION_FRONT_EVENTS = {
+    LEAVE: "conversation_leave",
     MESSAGE: "conversation_message",
-    GET_USERS_WAITING: "conversation_get_users_waiting",
-    ACCEPTED_REQUEST: "conversation_accept_request",
+    GET_USERS_WAITING_ADMIN: "conversation_get_users_waiting",
+    ACCEPTED_REQUEST_ADMIN: "conversation_accept_request"
 }
 
-exports.CONVERSATION_EMITTED_EVENTS = {
-    USER_JOINED: "conversation_user_joined",
-    NEW_MESSAGE: "conversation_new_message",
-    USER_LEFT: "conversation_user_left",
-    ADMINS_AVAILABLE: "conversation_admins_available",
+exports.CONVERSATION_BACK_EVENTS = {
     NO_ADMIN_AVAILABLE: "conversation_no_admin_available",
+    ADMINS_AVAILABLE: "conversation_admins_available",
+    ADMIN_LEFT: "conversation_admin_left",
+    NEW_MESSAGE: "conversation_new_message",
+    USER_JOINED: "conversation_user_joined",
     USERS_WAITING: "conversation_users_waiting",
-    
+    REQUEST_ACCEPTED: "conversation_request_accepted"
 }
