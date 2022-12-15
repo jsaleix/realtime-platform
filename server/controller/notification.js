@@ -7,6 +7,7 @@ const {
     admins,
     users
 } = require('../services/sse');
+const { CONVERSATION_EMITTED_EVENTS } = require('../constants/ws-events');
 
 exports.getSSE = (req, res, next) => {
     try {
@@ -39,7 +40,6 @@ exports.getSSE = (req, res, next) => {
         };
         res.writeHead(200, headers);
         console.log(Object.keys(admins), Object.keys(users));
-        broadcastAdmins({type: 'conversation_admins_available', data: { admins: Object.keys(admins)}})
         broadcastUser({type: 'connect', client_id}, client_id);
     } catch(err){
         console.error(err);

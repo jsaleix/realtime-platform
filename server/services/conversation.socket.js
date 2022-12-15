@@ -75,7 +75,7 @@ const connectionLoadBalancer = (socket, next) => {
         clients_requests.push(socket);
         broadcastAdmins({
             type: CONVERSATION_EMITTED_EVENTS.ADMINS_AVAILABLE,
-            data: { message: "A user is requesting a conversation" },
+            message: "A user is requesting a conversation",
         });
         const users_waiting = get_users_waitings();
         for (let admin of admins) {

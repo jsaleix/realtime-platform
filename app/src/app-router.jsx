@@ -76,9 +76,7 @@ export default function AppRouter(){
         })
 
         eventSource.addEventListener("conversation_admins_available", (e) => {
-            console.log("admin")
-            const data = JSON.parse(e.data).admins;
-            console.log(data);
+            const data = JSON.parse(e.data).message;
             toast(data);
         });
 
