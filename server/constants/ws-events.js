@@ -59,4 +59,5 @@ exports.CONVERSATION_EMITTED_EVENTS = {
     ADMINS_AVAILABLE: "conversation_admins_available",
     NO_ADMIN_AVAILABLE: "conversation_no_admin_available",
     USERS_WAITING: "conversation_users_waiting",
+    
 }

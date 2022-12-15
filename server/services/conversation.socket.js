@@ -133,4 +133,16 @@ exports.conversationHandler = (io, socket) => {
         clients_requests.splice(clients_requests.indexOf(user), 1);
         socket.to(user.id).emit(CONVERSATION_EMITTED_EVENTS.REQUEST_ACCEPTED);
     });
+
+    socket.on(CONVERSATION_RECEIVED_EVENTS.MESSAGE, data => {
+      const conversation = current_conversations.find((conversation) =>
+          conversation.includes(socket.user.id)
+      );
+      if (!conversation) return;
+      const otherUser = conversation.find((id) => id !== socket.user.id);
+      const otherUserSocket = clients_requests.find(
+          (client) => client.user.id === otherUser
+      );
+      
+    })
 };
