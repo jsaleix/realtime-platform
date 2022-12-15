@@ -24,6 +24,16 @@ app.use(
 	})
 );
 
+const io = new WssServer(httpServer, {
+	cors: {
+		origin: true,
+	}
+})
+
+// channelHandler(io);
+conversationHandler(io);
+chatbotHandler(io);
+
 const channelIo = new WssServer(httpServer, {
 	path: "/channel",
 	cors: {
@@ -31,23 +41,23 @@ const channelIo = new WssServer(httpServer, {
 	}
 });
 
-const conversationIo = new WssServer(httpServer, {
-	path: "/conversation",
-	cors: {
-		origin: true,
-	}
-});
+// const conversationIo = new WssServer(httpServer, {
+// 	path: "/conversation",
+// 	cors: {
+// 		origin: true,
+// 	}
+// });
 
-const chatbotIo = new WssServer(httpServer, {
-	path: "/chatbot",
-	cors: {
-		origin: true,
-	}
-});
+// const chatbotIo = new WssServer(httpServer, {
+// 	path: "/chatbot",
+// 	cors: {
+// 		origin: true,
+// 	}
+// });
 
 channelIo.on('connection', socket => channelHandler(channelIo, socket));
-conversationIo.on('connection', socket => conversationHandler(conversationIo, socket));
-chatbotIo.on('connection', socket => chatbotHandler(chatbotIo, socket));
+// conversationIo.on('connection', socket => conversationHandler(conversationIo, socket));
+// chatbotIo.on('connection', socket => chatbotHandler(chatbotIo, socket));
 
 app.use("/", mainRouter);
 

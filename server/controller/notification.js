@@ -7,6 +7,7 @@ const {
     admins,
     users
 } = require('../services/sse');
+const { CONVERSATION_EMITTED_EVENTS } = require('../constants/ws-events');
 
 exports.getSSE = (req, res, next) => {
     try {
@@ -15,7 +16,7 @@ exports.getSSE = (req, res, next) => {
         if(!client_id){
             client_id = randomUUID();
         }
-        user = verifyToken(req.query.token);
+        user = verifyToken(token);
         if(user && user.isAdmin){
             admins[user.id] = res;
         } else {
@@ -38,7 +39,6 @@ exports.getSSE = (req, res, next) => {
             Connection: "keep-alive",
         };
         res.writeHead(200, headers);
-
         broadcastUser({type: 'connect', client_id}, client_id);
     } catch(err){
         console.error(err);
@@ -47,19 +47,15 @@ exports.getSSE = (req, res, next) => {
 }
 
 exports.disconnectSSE = (req, res, next) => {
-    console.log('entry');
     const user = req.user;
     if(user){
         if(users[user.id]){
-            console.log(user.id, users[user.id])
             delete users[user.id];
         }
         if(admins[user.id]){
-            console.log(user.id, users[user.id])
             delete admins[user.id];
         }
     }
-    console.log("sending 200");
     return res.sendStatus(200);
 }
 

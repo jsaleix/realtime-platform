@@ -6,6 +6,7 @@ const convertMessage = ({ type, ...data }) => {
     return `event: ${type}\n` + `data: ${JSON.stringify(data)}\n\n`;
 };
 
+//message = {type: "message", data: { message: "hello"}}
 const broadcastAdmins = (message) => {
     if(Object.values(admins).length > 0){
         Object.values(admins).map((res) => {

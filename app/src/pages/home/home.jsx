@@ -7,6 +7,7 @@ import { ROOM_EMITTED_EVENTS, ROOM_RECEIVED_EVENTS } from "../../constants/wss-e
 import style from "./home.module.scss";
 import { useSocketContext } from "../../contexts/socket-context";
 import ChatBotCta from "../../components/chatbot-cta";
+import ConversationCta from "../../components/conversation-cta";
 
 export default function Home() {
   const { appState } = useAppContext();
@@ -20,7 +21,6 @@ export default function Home() {
     socket.off("connect");
     socket.off(ROOM_RECEIVED_EVENTS.ROOM_CACHE_INVALIDATED);
     socket.off(ROOM_RECEIVED_EVENTS.LOAD_ROOMS);
-    socket.off(ROOM_RECEIVED_EVENTS.USER_JOINED);
     socket.off(ROOM_RECEIVED_EVENTS.USER_LEFT);
     socket.off(ROOM_RECEIVED_EVENTS.DISCONNECT);
     console.log("%cremoved listeners%s", "color: green");
@@ -48,8 +48,8 @@ export default function Home() {
       setRooms(data);
     });
 
-    socket.on(ROOM_RECEIVED_EVENTS.USER_JOINED, (data) => {
-      console.log("A user has entered the room", data);
+    socket.on("connect_error", () => {
+      console.log("%cAN ERROR OCCURRED WTFFF", "color: red")
     });
 
     socket.on(ROOM_RECEIVED_EVENTS.USER_LEFT, (data) => {
@@ -109,6 +109,7 @@ export default function Home() {
         <p>Please login to see the rooms</p>
       }
       <ChatBotCta/>
+      <ConversationCta/>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 exports.GLOBAL_EVENTS = {
     CONNECT: "connect",
     DISCONNECT: "disconnect",
-    ERROR: "error"
+    ERROR: "error",
+    CONNECTION_ERROR: "connection_error",
 };
 
 exports.ROOM_EMITTED_EVENTS = {
@@ -12,6 +13,7 @@ exports.ROOM_EMITTED_EVENTS = {
     INIT_MESSAGES: "init_messages",
     NEW_MESSAGE: "room_new_message",
     LOAD_ROOMS: "load_rooms",
+    ROOM_FULL: "room_full",
     ROOM_UPDATED: "room_updated",
     ROOM_CREATED: "room_created",
     ROOM_ALREADY_EXISTS: "room_already_exists",
@@ -42,3 +44,22 @@ exports.CHATBOT_RECEIVED_EVENTS = {
     CONVERSATION_CONTACT_PHONE: "conversation_contact_phone",
     END: "end",
 };
+
+
+exports.CONVERSATION_RECEIVED_EVENTS = {
+    JOIN_CHANNEL: "conversation_join",
+    LEAVE_CHANNEL: "conversation_leave",
+    MESSAGE: "conversation_message",
+    GET_USERS_WAITING: "conversation_get_users_waiting",
+    ACCEPTED_REQUEST: "conversation_accept_request",
+}
+
+exports.CONVERSATION_EMITTED_EVENTS = {
+    USER_JOINED: "conversation_user_joined",
+    NEW_MESSAGE: "conversation_new_message",
+    USER_LEFT: "conversation_user_left",
+    ADMINS_AVAILABLE: "conversation_admins_available",
+    NO_ADMIN_AVAILABLE: "conversation_no_admin_available",
+    USERS_WAITING: "conversation_users_waiting",
+    
+}

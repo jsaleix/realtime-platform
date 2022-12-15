@@ -3,7 +3,7 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/navbar/navbar';
 import { useAppContext } from "./contexts/app-context";
-import { SSE_URL } from "./constants/urls";
+import { SSE_URL, API_URL } from "./constants/urls";
 import { useCallback } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,7 +22,6 @@ export default function AppRouter(){
 
     useEffect(() => {
         if(appState.cgu_accepted){
-            console.log("Started")
             LogRocket.init('uvgdko/test-96ihm');
             if(appState.auth){
                 LogRocket.identify(appState.auth.id, {
@@ -71,6 +70,11 @@ export default function AppRouter(){
             const data = JSON.parse(e.data).message;
             toast(data);
         })
+
+        eventSource.addEventListener("conversation_admins_available", (e) => {
+            const data = JSON.parse(e.data).message;
+            toast(data);
+        });
 
         dispatch({action: "SET_EVENT_SOURCE", payload: eventSource});
 	}, [appState.auth]);

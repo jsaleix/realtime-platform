@@ -4,7 +4,8 @@ const { QUESTIONS } = require("./utils/questions");
 
 const clientsQuestion = [];
 
-exports.chatbotHandler = async (io, socket) => {
+exports.chatbotHandler = async (io) => {
+  io.of('/chatbot').on('connection', async (socket) => {
     let notes = {};
     socket.emit("message_received", {id: "origin", ...(await QUESTIONS["origin"]())});
     //Setting the current question for each client
@@ -41,4 +42,5 @@ exports.chatbotHandler = async (io, socket) => {
         socket.emit("message_received", {id: next, ...(await QUESTIONS[next](answer, notes))});
       }, 0);
     })
+  });
 };
