@@ -20,10 +20,6 @@ export default function AppRouter(){
 	const { appState, dispatch } = useAppContext();
     const [cguModalVisible, setCguModalVisible] = useState(false);
 
-    useEffect(()=>{
-        console.log(API_URL);
-    }, []);
-
     useEffect(() => {
         if(appState.cgu_accepted){
             LogRocket.init('uvgdko/test-96ihm');

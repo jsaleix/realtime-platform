@@ -39,7 +39,6 @@ exports.getSSE = (req, res, next) => {
             Connection: "keep-alive",
         };
         res.writeHead(200, headers);
-        console.log(Object.keys(admins), Object.keys(users));
         broadcastUser({type: 'connect', client_id}, client_id);
     } catch(err){
         console.error(err);
@@ -48,19 +47,15 @@ exports.getSSE = (req, res, next) => {
 }
 
 exports.disconnectSSE = (req, res, next) => {
-    console.log('entry');
     const user = req.user;
     if(user){
         if(users[user.id]){
-            console.log(user.id, users[user.id])
             delete users[user.id];
         }
         if(admins[user.id]){
-            console.log(user.id, users[user.id])
             delete admins[user.id];
         }
     }
-    console.log("sending 200");
     return res.sendStatus(200);
 }
 

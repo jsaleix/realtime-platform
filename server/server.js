@@ -30,16 +30,16 @@ const io = new WssServer(httpServer, {
 	}
 })
 
-channelHandler(io);
+// channelHandler(io);
 conversationHandler(io);
 chatbotHandler(io);
 
-// const channelIo = new WssServer(httpServer, {
-// 	path: "/channel",
-// 	cors: {
-// 		origin: true,
-// 	}
-// });
+const channelIo = new WssServer(httpServer, {
+	path: "/channel",
+	cors: {
+		origin: true,
+	}
+});
 
 // const conversationIo = new WssServer(httpServer, {
 // 	path: "/conversation",
@@ -55,7 +55,7 @@ chatbotHandler(io);
 // 	}
 // });
 
-// channelIo.on('connection', socket => channelHandler(channelIo, socket));
+channelIo.on('connection', socket => channelHandler(channelIo, socket));
 // conversationIo.on('connection', socket => conversationHandler(conversationIo, socket));
 // chatbotIo.on('connection', socket => chatbotHandler(chatbotIo, socket));
 

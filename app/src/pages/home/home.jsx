@@ -21,7 +21,6 @@ export default function Home() {
     socket.off("connect");
     socket.off(ROOM_RECEIVED_EVENTS.ROOM_CACHE_INVALIDATED);
     socket.off(ROOM_RECEIVED_EVENTS.LOAD_ROOMS);
-    socket.off(ROOM_RECEIVED_EVENTS.USER_JOINED);
     socket.off(ROOM_RECEIVED_EVENTS.USER_LEFT);
     socket.off(ROOM_RECEIVED_EVENTS.DISCONNECT);
     console.log("%cremoved listeners%s", "color: green");

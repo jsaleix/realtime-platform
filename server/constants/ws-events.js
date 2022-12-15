@@ -13,6 +13,7 @@ exports.ROOM_EMITTED_EVENTS = {
     INIT_MESSAGES: "init_messages",
     NEW_MESSAGE: "room_new_message",
     LOAD_ROOMS: "load_rooms",
+    ROOM_FULL: "room_full",
     ROOM_UPDATED: "room_updated",
     ROOM_CREATED: "room_created",
     ROOM_ALREADY_EXISTS: "room_already_exists",

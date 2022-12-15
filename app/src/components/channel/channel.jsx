@@ -25,7 +25,7 @@ export default function Channel({roomId}){
     const sendMessage = useCallback(() => {
         socket.emit(ROOM_EMITTED_EVENTS.MESSAGE, {message: input, roomId});
         setInput("");
-    }, [socket, input]);
+    }, [socket, input, roomId]);
 
     useEffect(()=>{
         if(!socket || !socket.id ) return;
@@ -46,6 +46,7 @@ export default function Channel({roomId}){
         });
 
         socket.on(ROOM_RECEIVED_EVENTS.CURRENT_USER_JOINED, (roomId) => {
+            console.log("okn,aek,apodea,ozd")
             console.log("You joined room", roomId);
             setPending(false);
         });
