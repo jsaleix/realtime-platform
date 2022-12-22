@@ -22,14 +22,14 @@ export default function Admin() {
             <div className="container">
                 <div className={style.admin_nav}>
                     <NavLink className={navLinkStyle} to={"/admin"} end>Realtime Panel</NavLink>
-                    <NavLink className={navLinkStyle} to="/admin/users">Users</NavLink>
+                    {/* <NavLink className={navLinkStyle} to="/admin/users">Users</NavLink> */}
                     <NavLink className={navLinkStyle} to="/admin/conversations">Conversation requests</NavLink>
                 </div>
             </div>
             <Routes>
                 <Route path="/conversations" element={<Conversations/>} />
                 <Route exact path="/" element={<AdminPannel/>} />
-                <Route path="/users" element={<UserList/>}/>
+                {/* <Route path="/users" element={<UserList/>}/> */}
                 <Route path="*" element={<PageIntrouvable />} />
             </Routes>
         </>
