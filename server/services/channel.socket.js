@@ -50,7 +50,9 @@ const leaveRoom = (userId, socket) => {
 
   if(currentRoom !== undefined){
       socket.leave(currentRoom.id);
-      socket.to(currentRoom.id).emit(ROOM_EMITTED_EVENTS.USER_LEFT, userId);
+      socket.to(currentRoom.id).emit(ROOM_EMITTED_EVENTS.USER_LEFT, {
+          username: userId
+      });
       currentRoom.users = currentRoom.users.filter((id) => id !== userId);
   }
 };
