@@ -4,6 +4,7 @@ import style from './navbar.module.scss';
 import { useAppContext } from '../../contexts/app-context';
 import { useCallback } from 'react';
 import AuthService from '../../services/auth.service';
+import Logo from "../../assets/logo.png";
 
 export default function Navbar(){
     const { appState, dispatch } = useAppContext();
@@ -16,7 +17,7 @@ export default function Navbar(){
     return (
         <div className={style.navbar}>
             <Link to={"/"} className={style.logo}>
-                <img src={null} alt="logo" />
+                <img src={Logo} alt="logo" />
             </Link>
 
             <div className={style.actions}>
