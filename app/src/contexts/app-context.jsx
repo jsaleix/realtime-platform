@@ -66,6 +66,7 @@ export const appStateReducer = (previousState, { action, payload }) => {
         case "SET_EVENT_SOURCE":
             if( previousState.eventSource && previousState.eventSource.readyState !== EventSource.CLOSED){
                 previousState.eventSource.close();
+                console.log("DELETED")
             }
             return { ...previousState, eventSource: payload };
 

@@ -15,6 +15,12 @@ const broadcastAdmins = (message) => {
     }
 }
 
+const broadcastAdmin = (message, client_id) => {
+    if(admins[client_id]){
+        admins[client_id].write(convertMessage(message));
+    }
+}
+
 const broadcastUsers = (message) => {
     if(Object.values(users).length > 0){
         Object.values(users).map((res) => {
@@ -32,6 +38,7 @@ const broadcastUser = (message, client_id) => {
 module.exports = {
     convertMessage,
     broadcastAdmins,
+    broadcastAdmin,
     broadcastUsers,
     broadcastUser,
     admins,

@@ -2,6 +2,7 @@ const {verifyToken} = require('../lib/jwt');
 const { randomUUID} = require('crypto');
 const { 
     broadcastAdmins,
+    broadcastAdmin,
     broadcastUsers,
     broadcastUser,
     admins,
@@ -39,7 +40,11 @@ exports.getSSE = (req, res, next) => {
             Connection: "keep-alive",
         };
         res.writeHead(200, headers);
-        broadcastUser({type: 'connect', client_id}, client_id);
+        if(user && user.isAdmin){
+            broadcastAdmin({type: 'connect', client_id}, user.id);
+        }else{
+            broadcastUser({type: 'connect', client_id}, client_id);
+        }
     } catch(err){
         console.error(err);
         next();
