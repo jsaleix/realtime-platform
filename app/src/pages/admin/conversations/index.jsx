@@ -4,6 +4,7 @@ import {
     CONVERSATION_BACK_EVENTS,
     CONVERSATION_FRONT_EVENTS,
 } from "../../../constants/wss-events";
+import { SOCKET_CONVERSATION_URL } from "../../../constants/urls";
 import { useAppContext } from "../../../contexts/app-context";
 import style from "./index.module.scss";
 
@@ -27,7 +28,7 @@ const Conversations = () => {
 
     useEffect(() => {
         const { token } = appState.auth;
-        const tmpSocket = io("http://localhost:3000/conversation", {
+        const tmpSocket = io( SOCKET_CONVERSATION_URL, {
             auth: { token },
         });
         setSocket(tmpSocket);

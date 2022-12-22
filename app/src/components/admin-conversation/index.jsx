@@ -6,6 +6,7 @@ import {
     CONVERSATION_BACK_EVENTS,
     CONVERSATION_FRONT_EVENTS,
 } from "../../constants/wss-events";
+import { SOCKET_CONVERSATION_URL } from "../../constants/urls";
 import { displayMsg } from "../../utils/toast";
 import ChatBox from "../chat-box";
 
@@ -32,7 +33,7 @@ export default function AdminConversation({ close }) {
 
         console.log("setting socket");
         const { token } = appState.auth;
-        const tmpSocket = io("http://localhost:3000/conversation", {
+        const tmpSocket = io( SOCKET_CONVERSATION_URL, {
             auth: { token },
         });
 
