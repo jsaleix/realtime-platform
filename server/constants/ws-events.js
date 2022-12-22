@@ -57,6 +57,7 @@ exports.CONVERSATION_BACK_EVENTS = {
     NO_ADMIN_AVAILABLE: "conversation_no_admin_available",
     ADMINS_AVAILABLE: "conversation_admins_available",
     ADMIN_LEFT: "conversation_admin_left",
+    USER_LEFT: "conversation_user_left",
     NEW_MESSAGE: "conversation_new_message",
     USER_JOINED: "conversation_user_joined",
     USERS_WAITING: "conversation_users_waiting",

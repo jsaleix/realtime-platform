@@ -65,7 +65,6 @@ const connectionLoadBalancer = (socket, next) => {
     if (socket.user.isAdmin) {
         admins.push(socket);
     } else {
-        console.log('il rentre pas dans le else');
         if (admins.length === 0) {
             socket.emit(CONVERSATION_BACK_EVENTS.NO_ADMIN_AVAILABLE);
             socket.disconnect();
@@ -93,7 +92,6 @@ exports.conversationHandler = (io) => {
     io.of("/conversation").use(connectionLoadBalancer);
 
     io.of("/conversation").on("connection", (socket) => {
-
         socket.on(CONVERSATION_FRONT_EVENTS.GET_USERS_WAITING_ADMIN, () => {
             if (!socket.user.isAdmin) return;
             const users_waiting = get_users_waitings();
@@ -104,20 +102,26 @@ exports.conversationHandler = (io) => {
 
         socket.on("disconnect", () => {
             if (socket.user.isAdmin) {
+                //Removing the admin from the admins array
                 admins.splice(admins.indexOf(socket), 1);
                 const possibleConversation = current_conversations.find( (conversation) => conversation.includes(socket));
                 if (possibleConversation) {
                     const otherUser = possibleConversation.find((sock) => sock.id !== socket.id);
+                    //Notifying the user that the admin left
                     otherUser.emit(CONVERSATION_BACK_EVENTS.ADMIN_LEFT);
                     current_conversations.splice(possibleConversation, 1);
                 }
 
             } else {
-                clients_requests.splice(clients_requests.indexOf(socket), 1);
-                console.log(
-                    "clients_requests",
-                    clients_requests.map((client) => client.user.id)
-                );
+                //Removing the user from the conversations array
+                const possibleConversation = current_conversations.find( (conversation) => conversation.includes(socket));
+                if (possibleConversation) {
+                    //Notifying the admin that the user left
+                    const admin = possibleConversation.find((sock) => sock.id !== socket.id);
+                    admin.emit(CONVERSATION_BACK_EVENTS.USER_LEFT);
+                    const conversationIdx = current_conversations.indexOf(possibleConversation);
+                    current_conversations.splice(conversationIdx, 1);
+                }
                 const users_waiting = get_users_waitings();
                 for (let admin of admins) {
                     admin.emit(CONVERSATION_BACK_EVENTS.USERS_WAITING, {
