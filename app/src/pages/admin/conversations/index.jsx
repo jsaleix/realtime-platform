@@ -6,19 +6,49 @@ import {
 } from "../../../constants/wss-events";
 import { useAppContext } from "../../../contexts/app-context";
 import style from "./index.module.scss";
+import { displayMsg } from "../../../utils/toast";
+import ChatBox from "../../../components/chat-box";
 
 const Conversation = ({ socket, close }) => {
-    const { appState } = useAppContext();
     const [messages, setMessages] = useState([]);
 
-    return <div className={style.conversation}>pas mal</div>;
+    useEffect(() => {
+        socket.on(CONVERSATION_BACK_EVENTS.USER_LEFT, () => {
+            close();
+            displayMsg("User left the conversation", "error");
+        });
+
+        socket.on(CONVERSATION_BACK_EVENTS.NEW_MESSAGE, (message) => {
+            setMessages((prev) => [...prev, message]);
+        });
+
+        return () => {
+            socket.off(CONVERSATION_BACK_EVENTS.USER_LEFT);
+            socket.off(CONVERSATION_BACK_EVENTS.NEW_MESSAGE);
+        };
+    }, [socket]);
+
+    const sendMessage = useCallback(
+        (input) => {
+            if (socket) {
+                socket.emit(CONVERSATION_FRONT_EVENTS.MESSAGE, input);
+            }
+        },
+        [socket]
+    );
+
+    return (
+        <div className={style.conversation}>
+            <ChatBox messages={messages} onSendMessage={sendMessage} />
+        </div>
+    );
 };
 
 const Requests = ({ socket, handleRequest }) => {
     const [requests, setRequests] = useState([]);
 
-    useEffect(()=>{
-        if(!socket){
+    useEffect(() => {
+        if (!socket) {
             return;
         }
         console.log("getting requests");
@@ -27,7 +57,7 @@ const Requests = ({ socket, handleRequest }) => {
         socket.on("connect_error", () => {
             console.log("connect_error");
         });
-        
+
         socket.on(
             CONVERSATION_BACK_EVENTS.USERS_WAITING,
             ({ users_waiting }) => {
@@ -37,7 +67,7 @@ const Requests = ({ socket, handleRequest }) => {
 
         return () => {
             socket.off(CONVERSATION_BACK_EVENTS.USERS_WAITING);
-        }
+        };
     }, [socket]);
 
     return (
@@ -70,7 +100,7 @@ const Conversations = () => {
     const handleRequest = useCallback(
         (userId) => {
             socket.emit(CONVERSATION_FRONT_EVENTS.ACCEPTED_REQUEST_ADMIN, {
-                user_id: userId
+                user_id: userId,
             });
             setCurrentConversation(userId);
         },
@@ -96,7 +126,10 @@ const Conversations = () => {
             <section>
                 <div className="container">
                     {currentConversation ? (
-                        <Conversation socket={socket} close={null} />
+                        <Conversation
+                            socket={socket}
+                            close={() => setCurrentConversation(null)}
+                        />
                     ) : (
                         <Requests
                             socket={socket}

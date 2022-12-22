@@ -4,6 +4,7 @@ import style from "./message-item.module.scss";
 
 export default function MessageItem({message, displayUser = true}) {
     const {appState} = useAppContext();
+    
     return(
         <div className={style.main}>
             {

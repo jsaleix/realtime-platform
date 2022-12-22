@@ -1,0 +1,36 @@
+@import "../../styles/responsive.scss";
+
+.messages{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    @include sm{
+        width: 100%;
+    }
+    
+    .messagesContainer{
+        height: 300px;
+        overflow-y: scroll;
+        width: 100%;
+        display: flex;
+        flex-direction: column; 
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    .input{
+        width: 100%;
+        display: flex;
+        gap: 10px;
+        input{
+            width: 100%;
+        }
+    }
+}

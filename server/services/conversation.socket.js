@@ -113,20 +113,28 @@ exports.conversationHandler = (io) => {
                 }
 
             } else {
+                //If the user is in a conversation
+                //Notifying the admin that the user left
                 //Removing the user from the conversations array
                 const possibleConversation = current_conversations.find( (conversation) => conversation.includes(socket));
                 if (possibleConversation) {
                     //Notifying the admin that the user left
                     const admin = possibleConversation.find((sock) => sock.id !== socket.id);
+                    console.log("notifying ", admin.user.id);
                     admin.emit(CONVERSATION_BACK_EVENTS.USER_LEFT);
                     const conversationIdx = current_conversations.indexOf(possibleConversation);
                     current_conversations.splice(conversationIdx, 1);
                 }
-                const users_waiting = get_users_waitings();
-                for (let admin of admins) {
-                    admin.emit(CONVERSATION_BACK_EVENTS.USERS_WAITING, {
-                        users_waiting,
-                    });
+
+                const possibleRequestIdx = clients_requests.indexOf(socket);
+                if (possibleRequestIdx !== -1) {
+                    clients_requests.splice(possibleRequestIdx, 1);
+                    const users_waiting = get_users_waitings();
+                    for (let admin of admins) {
+                        admin.emit(CONVERSATION_BACK_EVENTS.USERS_WAITING, {
+                            users_waiting,
+                        });
+                    }
                 }
             }
         });
@@ -147,12 +155,23 @@ exports.conversationHandler = (io) => {
                 conversation.includes(socket)
             );
             if (!conversation) return;
+
+            const getUserName = (client) => {
+                if(client.user) return "Unknown";
+                const { lastName, firstName, id } = client.user;
+                return { name: `${firstName} ${lastName}`, id };
+            }
+
+            const message = {
+                message: data,
+                username: getUserName(socket),
+                userId: socket.user.id,
+            }
+
             conversation.forEach((client) => {
-                client.emit(CONVERSATION_BACK_EVENTS.NEW_MESSAGE, data);
+                client.emit(CONVERSATION_BACK_EVENTS.NEW_MESSAGE, message);
             });
             
-            // const otherUser = conversation.find((id) => id !== socket.user.id);
-            // otherUser.emit(CONVERSATION_BACK_EVENTS.MESSAGE, data);
         });
 
     });
