@@ -11,6 +11,9 @@ services:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=app
+    networks:
+      - db
+      - dbadmin
 
   server:
     build: ./server
@@ -26,6 +29,9 @@ services:
       - 3000:3000
     depends_on:
       - db
+    networks:
+      - frontend
+      - db
 
   app:
     build: ./app
@@ -34,11 +40,23 @@ services:
     volumes:
       - ./app:/home/node
       - /home/node/node_modules
+    networks:
+      - frontend
 
   adminer:
     image: adminer
     ports:
       - 8080:8080
+    networks:
+      - dbadmin
       
 volumes:
   db-data: {}
+
+networks:
+  dbadmin:
+    driver: bridge
+  db:
+    driver: bridge
+  frontend:
+    driver: bridge
